@@ -4,6 +4,9 @@
  */
 
 import './style.css';
+import { importer } from './modules/importer/importer.js';
+import { Kiwee5ePlugin } from './modules/importer/plugins/kiwee5e.js';
+import { initImporterUI } from './modules/importer/importer-ui.js';
 import {
   executeToolbarAction,
   executeFormatCommand,
@@ -74,6 +77,14 @@ async function init() {
 
   // Initial layout update
   requestAnimationFrame(updatePageLayout);
+
+  // Register Importer Plugins
+  importer.register(new Kiwee5ePlugin());
+  // Initialize UI
+  initImporterUI(importer);
+
+  // Expose importer for debugging/console use
+  window.importer = importer;
 }
 
 init();

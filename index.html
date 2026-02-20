@@ -47,6 +47,9 @@
         <button class="icon-btn" id="btn-export-html" title="导出HTML">
           <span class="material-symbols-rounded">code</span>
         </button>
+        <button class="icon-btn" id="btn-import" title="从外部导入">
+          <span class="material-symbols-rounded">cloud_download</span>
+        </button>
         <button class="icon-btn" id="btn-settings" title="设置">
           <span class="material-symbols-rounded">settings</span>
         </button>
@@ -317,6 +320,55 @@
       <div class="color-custom">
         <input type="color" id="custom-color" value="#e74c3c" />
         <label for="custom-color">自定义颜色</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div id="import-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3>☁️ 导入数据</h3>
+        <button class="icon-btn modal-close" id="btn-close-import">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body import-layout">
+        <div class="import-sidebar">
+          <label class="section-label">数据源</label>
+          <select id="import-source" class="setting-select mb-2">
+            <option value="kiwee-5e">5e.kiwee.top (中文)</option>
+          </select>
+
+          <label class="section-label mt-2">类型</label>
+          <div class="import-types" id="import-types">
+            <button class="type-btn active" data-type="spell">法术 (Spells)</button>
+            <button class="type-btn" data-type="monster">怪物 (Bestiary)</button>
+            <button class="type-btn" data-type="item">物品 (Items)</button>
+          </div>
+        </div>
+
+        <div class="import-main">
+          <div class="import-search-bar">
+            <span class="material-symbols-rounded search-icon">search</span>
+            <input type="text" id="import-search" placeholder="搜索名称 (支持中英文，如 'Fireball' 或 '火球')..." />
+          </div>
+
+          <div class="import-split-view">
+            <div class="import-list" id="import-results">
+              <!-- Results populated by JS -->
+              <div class="empty-state">请输入关键词搜索</div>
+            </div>
+            <div class="import-preview-pane" id="import-preview">
+              <div class="preview-placeholder">选择条目以预览</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span id="import-status" class="import-status"></span>
+        <button class="btn-primary" id="btn-import-confirm" disabled>插入到编辑器</button>
       </div>
     </div>
   </div>
