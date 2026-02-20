@@ -75,6 +75,10 @@ export function executeToolbarAction(action, editorEl) {
         }
 
         // Page layout
+        case 'toggle-columns':
+            editorEl.classList.toggle('two-columns');
+            break;
+
         case 'page-break':
             insertHTML('<hr class="page-break"><p><br></p>');
             break;

@@ -23,7 +23,8 @@
   --transition: 0.2s ease;
   --header-height: 48px;
   --format-bar-height: 40px;
-  --toolbar-width: 72px;
+  --toolbar-width: 96px;
+  /* Widened from 72px */
 }
 
 [data-theme="light"] {
@@ -276,9 +277,11 @@ body {
 }
 
 .toolbar-label {
-  font-size: 9px;
-  line-height: 1;
+  font-size: 11px;
+  /* Increased from 9px */
+  line-height: 1.2;
   font-family: 'Noto Sans SC', sans-serif;
+  text-align: center;
 }
 
 /* ---- Editor Wrapper ---- */
@@ -585,8 +588,37 @@ body {
   border-bottom: 1px solid #c9ad6a;
 }
 
+.wysiwyg-editor td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #c9ad6a;
+}
+
 .wysiwyg-editor tr:nth-child(even) td {
   background: rgba(201, 173, 106, 0.08);
+}
+
+/* ---- Two Column Layout Mode ---- */
+.wysiwyg-editor.two-columns {
+  column-count: 2;
+  column-gap: 8mm;
+  /* Standard roughly 1.5-2em or 8mm */
+  column-rule: 1px solid rgba(201, 173, 106, 0.5);
+  text-align: justify;
+}
+
+.wysiwyg-editor.two-columns h1 {
+  column-span: all;
+  /* Title spans both columns */
+}
+
+/* Ensure components don't break awkwardly in columns */
+.trpg-stat-block,
+.trpg-spell-card,
+.trpg-item-card,
+.trpg-note,
+.trpg-warning {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 /* ---- TRPG Components (inside editor) ---- */
