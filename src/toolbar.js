@@ -1,262 +1,242 @@
 /**
- * TRPG写作工坊 — Toolbar Actions
- * Maps toolbar button clicks to editor text insertions/wrappings
+ * TRPG写作工坊 — Toolbar Actions (WYSIWYG)
+ * Uses document.execCommand and Selection API for contenteditable editing
  */
 
-/**
- * Get the selection info from a textarea
- * @param {HTMLTextAreaElement} editor 
- * @returns {{ start: number, end: number, selected: string, before: string, after: string }}
- */
-function getSelection(editor) {
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    return {
-        start,
-        end,
-        selected: editor.value.substring(start, end),
-        before: editor.value.substring(0, start),
-        after: editor.value.substring(end)
-    };
-}
+// ---- TRPG Element Templates ----
+
+const TEMPLATES = {
+    note: `<div class="trpg-note" contenteditable="true"><p>在此输入提示内容…</p></div>`,
+
+    warning: `<div class="trpg-warning" contenteditable="true"><p>在此输入警告内容…</p></div>`,
+
+    'stat-block': `<div class="trpg-stat-block" contenteditable="true">
+    <h3>怪物名称</h3>
+    <p class="stat-subtitle"><em>中型 人形生物，任意阵营</em></p>
+    <p class="stat-line"><strong>护甲等级</strong> 12</p>
+    <p class="stat-line"><strong>生命值</strong> 22 (5d8)</p>
+    <p class="stat-line"><strong>速度</strong> 30尺</p>
+    <table><thead><tr><th>力量</th><th>敏捷</th><th>体质</th><th>智力</th><th>感知</th><th>魅力</th></tr></thead>
+    <tbody><tr><td>10(+0)</td><td>14(+2)</td><td>10(+0)</td><td>10(+0)</td><td>12(+1)</td><td>10(+0)</td></tr></tbody></table>
+    <p class="stat-line"><strong>感官</strong> 被动感知 11</p>
+    <p class="stat-line"><strong>语言</strong> 通用语</p>
+    <p class="stat-line"><strong>挑战等级</strong> 1 (200 XP)</p>
+    <p><strong><em>特性名称。</em></strong> 特性描述…</p>
+    <h4>动作</h4>
+    <p><strong><em>攻击名称。</em></strong> <em>近战武器攻击：</em>命中+4，触及5尺，单一目标。命中：5 (1d6+2) 挥砍伤害。</p>
+  </div>`,
+
+    spell: `<div class="trpg-spell-card" contenteditable="true">
+    <h4>法术名称</h4>
+    <p class="spell-meta">X环 XXX（仪式）</p>
+    <p class="spell-props"><strong>施法时间：</strong>1 动作</p>
+    <p class="spell-props"><strong>施法距离：</strong>60尺</p>
+    <p class="spell-props"><strong>法术成分：</strong>V, S, M（材料描述）</p>
+    <p class="spell-props"><strong>持续时间：</strong>专注，至多1分钟</p>
+    <p>法术效果描述…</p>
+  </div>`,
+
+    item: `<div class="trpg-item-card" contenteditable="true">
+    <h4>物品名称</h4>
+    <p class="item-meta">魔法物品，稀有（需同调）</p>
+    <p class="item-props"><strong>类型：</strong>武器（长剑）</p>
+    <p>物品描述和效果…</p>
+  </div>`,
+
+    'dice-inline': `<span class="dice-inline" data-dice="1d20" contenteditable="false">1d20</span>`,
+};
 
 /**
- * Replace the selection and re-focus
- * @param {HTMLTextAreaElement} editor 
- * @param {string} text 
- * @param {number} cursorStart 
- * @param {number} cursorEnd 
+ * Execute a toolbar action on the WYSIWYG editor
+ * @param {string} action - The action identifier
+ * @param {HTMLElement} editorEl - The contenteditable element
  */
-function replaceSelection(editor, text, cursorStart, cursorEnd) {
-    editor.focus();
-    const { start, end, before, after } = getSelection(editor);
-    editor.value = before + text + after;
-    editor.selectionStart = cursorStart ?? (start + text.length);
-    editor.selectionEnd = cursorEnd ?? editor.selectionStart;
-    editor.dispatchEvent(new Event('input', { bubbles: true }));
-}
+export function executeToolbarAction(action, editorEl) {
+    // Ensure focus is on the editor
+    editorEl.focus();
 
-/**
- * Wrap selection with prefix/suffix or insert template
- * @param {HTMLTextAreaElement} editor 
- * @param {string} prefix 
- * @param {string} suffix 
- * @param {string} placeholder 
- */
-function wrapSelection(editor, prefix, suffix, placeholder = '') {
-    const { start, end, selected } = getSelection(editor);
-    const text = selected || placeholder;
-    const newText = prefix + text + suffix;
-    replaceSelection(editor, newText, start + prefix.length, start + prefix.length + text.length);
-}
-
-/**
- * Insert text at cursor position
- * @param {HTMLTextAreaElement} editor 
- * @param {string} text 
- * @param {number} cursorOffset - offset from the end of inserted text
- */
-function insertText(editor, text, cursorOffset = 0) {
-    const { start, before, after } = getSelection(editor);
-    editor.value = before + text + after;
-    const pos = start + text.length + cursorOffset;
-    editor.selectionStart = pos;
-    editor.selectionEnd = pos;
-    editor.focus();
-    editor.dispatchEvent(new Event('input', { bubbles: true }));
-}
-
-/**
- * Insert at beginning of each selected line
- * @param {HTMLTextAreaElement} editor
- * @param {string} prefix
- */
-function prefixLines(editor, prefix) {
-    const { start, end, selected } = getSelection(editor);
-    if (!selected) {
-        insertText(editor, prefix);
-        return;
-    }
-    const lines = selected.split('\n').map(line => prefix + line);
-    replaceSelection(editor, lines.join('\n'), start, start + lines.join('\n').length);
-}
-
-/**
- * Execute a toolbar action
- * @param {string} action - The action name from data-action
- * @param {HTMLTextAreaElement} editor - The editor textarea
- */
-export function executeAction(action, editor) {
     switch (action) {
-        case 'h1':
-            wrapSelection(editor, '# ', '', '一级标题');
-            break;
-        case 'h2':
-            wrapSelection(editor, '## ', '', '二级标题');
-            break;
-        case 'h3':
-            wrapSelection(editor, '### ', '', '三级标题');
-            break;
-        case 'h4':
-            wrapSelection(editor, '#### ', '', '四级标题');
-            break;
-        case 'bold':
-            wrapSelection(editor, '**', '**', '粗体文本');
-            break;
-        case 'italic':
-            wrapSelection(editor, '*', '*', '斜体文本');
-            break;
-        case 'strikethrough':
-            wrapSelection(editor, '~~', '~~', '删除线文本');
-            break;
-        case 'highlight':
-            wrapSelection(editor, '==', '==', '高亮文本');
-            break;
-        case 'ul':
-            prefixLines(editor, '- ');
-            break;
-        case 'ol':
-            prefixLines(editor, '1. ');
-            break;
-        case 'blockquote':
-            prefixLines(editor, '> ');
-            break;
-        case 'hr':
-            insertText(editor, '\n\n---\n\n');
-            break;
-        case 'code':
-            wrapSelection(editor, '```\n', '\n```', '代码内容');
-            break;
-        case 'table':
-            insertText(editor, `\n| 列1 | 列2 | 列3 |
-|:-----|:----:|-----:|
-| 内容 | 内容 | 内容 |
-| 内容 | 内容 | 内容 |
-\n`);
-            break;
-        case 'image':
-            wrapSelection(editor, '![', '](https://图片URL)', '图片描述');
-            break;
-        case 'link':
-            wrapSelection(editor, '[', '](https://链接URL)', '链接文本');
-            break;
+        // TRPG elements — insert HTML templates
         case 'note':
-            insertText(editor, `\n{{note
-##### 提示标题
-在此处编写提示内容。你可以使用任何Markdown语法。
-}}\n`, -3);
-            break;
         case 'warning':
-            insertText(editor, `\n{{warning
-##### 警告标题
-在此处编写警告内容。
-}}\n`, -3);
-            break;
         case 'stat-block':
-            insertText(editor, `\n{{stat-block
-### 怪物名称
-*中型 人形生物，守序邪恶*
-
----
-
-**护甲等级** 16（锁子甲）
-**生命值** 52（8d8 + 16）
-**速度** 30尺
-
----
-
-| 力量 | 敏捷 | 体质 | 智力 | 感知 | 魅力 |
-|:----:|:----:|:----:|:----:|:----:|:----:|
-| 16(+3) | 12(+1) | 14(+2) | 10(+0) | 11(+0) | 14(+2) |
-
----
-
-**技能** 威吓 +4，运动 +5
-**感官** 被动感知 10
-**语言** 通用语
-**挑战等级** 3（700 XP）
-
----
-
-##### 特性名称
-特性描述。
-
-##### 动作
-**多重攻击。** 描述多重攻击动作。
-
-**长剑。** *近战武器攻击：* +5 命中，触及5尺，单个目标。*命中：* 7（1d8 + 3）挥砍伤害。
-}}\n`);
-            break;
         case 'spell':
-            insertText(editor, `\n{{spell
-##### 法术名称
-*X环 学派*
-
-**施法时间：** 1 动作
-**射程：** 60尺
-**成分：** 语言、姿势、材料（材料描述）
-**持续时间：** 专注，至多1分钟
-
-法术效果描述。
-
-**升环施法。** 当你使用X环或更高环的法术位施放该法术时，效果增强描述。
-}}\n`);
-            break;
         case 'item':
-            insertText(editor, `\n{{item
-##### 物品名称
-*武器（长剑），罕见（需要同调）*
-
-该物品的描述和背景故事。
-
-你对该武器的攻击和伤害检定获得+1加值。
-
-**特殊能力。** 能力描述。
-}}\n`);
+            insertHTML(TEMPLATES[action] + '<p><br></p>');
             break;
-        case 'dice-inline':
-            wrapSelection(editor, '[[', ']]', '2d6+3');
+
+        case 'dice-inline': {
+            const formula = prompt('输入骰子公式（如 1d20, 2d6+3, 4d6kh3）:', '1d20');
+            if (formula) {
+                const html = `<span class="dice-inline" data-dice="${escapeAttr(formula)}" contenteditable="false">${escapeHtml(formula)}</span>&nbsp;`;
+                insertHTML(html);
+            }
             break;
+        }
+
+        // Page layout
         case 'page-break':
-            insertText(editor, '\n\\page\n');
+            insertHTML('<hr class="page-break"><p><br></p>');
             break;
+
         case 'column-break':
-            insertText(editor, '\n\\column\n');
+            insertHTML('<hr class="column-break"><p><br></p>');
             break;
+
+        case 'hr':
+            insertHTML('<hr><p><br></p>');
+            break;
+
+        // Insert elements
+        case 'table': {
+            const rows = parseInt(prompt('行数:', '3'), 10) || 3;
+            const cols = parseInt(prompt('列数:', '3'), 10) || 3;
+            insertHTML(buildTableHTML(rows, cols));
+            break;
+        }
+
+        case 'image': {
+            const url = prompt('输入图片URL:', 'https://');
+            if (url && url !== 'https://') {
+                insertHTML(`<img src="${escapeAttr(url)}" alt="图片" style="max-width:100%"><br>`);
+            }
+            break;
+        }
+
+        case 'link': {
+            const href = prompt('输入链接URL:', 'https://');
+            if (href && href !== 'https://') {
+                const text = getSelectionText() || prompt('链接文本:', '链接') || '链接';
+                insertHTML(`<a href="${escapeAttr(href)}" target="_blank">${escapeHtml(text)}</a>`);
+            }
+            break;
+        }
+
+        case 'code':
+            insertHTML('<pre><code>// 代码块\n</code></pre><p><br></p>');
+            break;
+
+        case 'blockquote':
+            document.execCommand('formatBlock', false, 'blockquote');
+            break;
+
         default:
-            console.warn('Unknown action:', action);
+            console.warn('Unknown toolbar action:', action);
     }
 }
 
 /**
- * Setup keyboard shortcuts for the editor
- * @param {HTMLTextAreaElement} editor 
+ * Execute a format bar command
+ * @param {string} cmd - The execCommand name
  */
-export function setupShortcuts(editor) {
-    editor.addEventListener('keydown', (e) => {
-        // Ctrl+B = Bold
-        if (e.ctrlKey && e.key === 'b') {
-            e.preventDefault();
-            executeAction('bold', editor);
-        }
-        // Ctrl+I = Italic
-        if (e.ctrlKey && e.key === 'i') {
-            e.preventDefault();
-            executeAction('italic', editor);
-        }
-        // Ctrl+K = Link
-        if (e.ctrlKey && e.key === 'k') {
-            e.preventDefault();
-            executeAction('link', editor);
-        }
-        // Tab = insert 2 spaces
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            if (e.shiftKey) {
-                // TODO: outdent
-            } else {
-                insertText(editor, '  ');
+export function executeFormatCommand(cmd) {
+    if (cmd === 'highlight') {
+        document.execCommand('hiliteColor', false, '#ffff00');
+    } else {
+        document.execCommand(cmd, false, null);
+    }
+}
+
+/**
+ * Apply a heading format from the block type select
+ * @param {string} tag - The tag name (p, h1, h2, h3, h4)
+ */
+export function applyBlockFormat(tag) {
+    document.execCommand('formatBlock', false, tag);
+}
+
+/**
+ * Apply font family to the selection
+ * @param {string} fontName
+ */
+export function applyFont(fontName) {
+    document.execCommand('fontName', false, fontName);
+}
+
+/**
+ * Apply text or background color
+ * @param {string} color - CSS color value
+ * @param {string} type - 'text' or 'bg'
+ */
+export function applyColor(color, type) {
+    if (type === 'bg') {
+        document.execCommand('hiliteColor', false, color);
+    } else {
+        document.execCommand('foreColor', false, color);
+    }
+}
+
+// ---- Helpers ----
+
+function insertHTML(html) {
+    document.execCommand('insertHTML', false, html);
+}
+
+function getSelectionText() {
+    const sel = window.getSelection();
+    return sel ? sel.toString() : '';
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function escapeAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function buildTableHTML(rows, cols) {
+    let html = '<table><thead><tr>';
+    for (let c = 0; c < cols; c++) html += `<th>标题${c + 1}</th>`;
+    html += '</tr></thead><tbody>';
+    for (let r = 0; r < rows; r++) {
+        html += '<tr>';
+        for (let c = 0; c < cols; c++) html += '<td>内容</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table><p><br></p>';
+    return html;
+}
+
+// ---- Keyboard Shortcuts ----
+
+export function setupKeyboardShortcuts(editorEl) {
+    editorEl.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            switch (e.key.toLowerCase()) {
+                case 'b':
+                    e.preventDefault();
+                    document.execCommand('bold', false, null);
+                    break;
+                case 'i':
+                    e.preventDefault();
+                    document.execCommand('italic', false, null);
+                    break;
+                case 'u':
+                    e.preventDefault();
+                    document.execCommand('underline', false, null);
+                    break;
             }
         }
     });
+}
+
+/**
+ * Detect current formatting state at cursor position
+ * Returns an object of active states
+ */
+export function queryFormatState() {
+    return {
+        bold: document.queryCommandState('bold'),
+        italic: document.queryCommandState('italic'),
+        underline: document.queryCommandState('underline'),
+        strikeThrough: document.queryCommandState('strikeThrough'),
+        insertUnorderedList: document.queryCommandState('insertUnorderedList'),
+        insertOrderedList: document.queryCommandState('insertOrderedList'),
+        justifyLeft: document.queryCommandState('justifyLeft'),
+        justifyCenter: document.queryCommandState('justifyCenter'),
+        justifyRight: document.queryCommandState('justifyRight'),
+    };
 }

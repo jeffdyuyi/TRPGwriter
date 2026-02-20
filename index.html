@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TRPG写作工坊 — 桌面角色扮演游戏模组编辑器</title>
-  <meta name="description" content="一个中文化的、模块化的、所见即所得的泛用性TRPG写作工具。支持Markdown编辑、实时预览、骰子骰点、PDF导出等功能。" />
+  <meta name="description" content="一个中文化的、模块化的、所见即所得的泛用性TRPG写作工具。支持富文本编辑、骰子骰点、PDF导出等功能。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0"
+    rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </head>
+
 <body>
   <div id="app">
     <!-- Header -->
@@ -50,84 +55,8 @@
 
     <!-- Main Content -->
     <main id="app-main">
-      <!-- Left Toolbar -->
+      <!-- Left Toolbar (TRPG Elements) -->
       <aside id="toolbar-panel" class="toolbar-panel">
-        <div class="toolbar-section">
-          <div class="toolbar-section-title">文本格式</div>
-          <button class="toolbar-btn" data-action="h1" title="一级标题">
-            <span class="material-symbols-rounded">format_h1</span>
-            <span class="toolbar-label">标题1</span>
-          </button>
-          <button class="toolbar-btn" data-action="h2" title="二级标题">
-            <span class="material-symbols-rounded">format_h2</span>
-            <span class="toolbar-label">标题2</span>
-          </button>
-          <button class="toolbar-btn" data-action="h3" title="三级标题">
-            <span class="material-symbols-rounded">format_h3</span>
-            <span class="toolbar-label">标题3</span>
-          </button>
-          <button class="toolbar-btn" data-action="h4" title="四级标题">
-            <span class="material-symbols-rounded">format_h4</span>
-            <span class="toolbar-label">标题4</span>
-          </button>
-          <button class="toolbar-btn" data-action="bold" title="粗体 (Ctrl+B)">
-            <span class="material-symbols-rounded">format_bold</span>
-            <span class="toolbar-label">粗体</span>
-          </button>
-          <button class="toolbar-btn" data-action="italic" title="斜体 (Ctrl+I)">
-            <span class="material-symbols-rounded">format_italic</span>
-            <span class="toolbar-label">斜体</span>
-          </button>
-          <button class="toolbar-btn" data-action="strikethrough" title="删除线">
-            <span class="material-symbols-rounded">strikethrough_s</span>
-            <span class="toolbar-label">删除线</span>
-          </button>
-          <button class="toolbar-btn" data-action="highlight" title="高亮">
-            <span class="material-symbols-rounded">highlight</span>
-            <span class="toolbar-label">高亮</span>
-          </button>
-        </div>
-
-        <div class="toolbar-section">
-          <div class="toolbar-section-title">列表与结构</div>
-          <button class="toolbar-btn" data-action="ul" title="无序列表">
-            <span class="material-symbols-rounded">format_list_bulleted</span>
-            <span class="toolbar-label">无序列表</span>
-          </button>
-          <button class="toolbar-btn" data-action="ol" title="有序列表">
-            <span class="material-symbols-rounded">format_list_numbered</span>
-            <span class="toolbar-label">有序列表</span>
-          </button>
-          <button class="toolbar-btn" data-action="blockquote" title="引用块">
-            <span class="material-symbols-rounded">format_quote</span>
-            <span class="toolbar-label">引用</span>
-          </button>
-          <button class="toolbar-btn" data-action="hr" title="分隔线">
-            <span class="material-symbols-rounded">horizontal_rule</span>
-            <span class="toolbar-label">分隔线</span>
-          </button>
-          <button class="toolbar-btn" data-action="code" title="代码块">
-            <span class="material-symbols-rounded">code_blocks</span>
-            <span class="toolbar-label">代码</span>
-          </button>
-        </div>
-
-        <div class="toolbar-section">
-          <div class="toolbar-section-title">插入元素</div>
-          <button class="toolbar-btn" data-action="table" title="插入表格">
-            <span class="material-symbols-rounded">table</span>
-            <span class="toolbar-label">表格</span>
-          </button>
-          <button class="toolbar-btn" data-action="image" title="插入图片">
-            <span class="material-symbols-rounded">image</span>
-            <span class="toolbar-label">图片</span>
-          </button>
-          <button class="toolbar-btn" data-action="link" title="插入链接">
-            <span class="material-symbols-rounded">link</span>
-            <span class="toolbar-label">链接</span>
-          </button>
-        </div>
-
         <div class="toolbar-section">
           <div class="toolbar-section-title">TRPG元素</div>
           <button class="toolbar-btn" data-action="note" title="提示框">
@@ -154,6 +83,10 @@
             <span class="material-symbols-rounded">casino</span>
             <span class="toolbar-label">骰子</span>
           </button>
+        </div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-section-title">页面布局</div>
           <button class="toolbar-btn" data-action="page-break" title="分页符">
             <span class="material-symbols-rounded">insert_page_break</span>
             <span class="toolbar-label">分页</span>
@@ -162,59 +95,121 @@
             <span class="material-symbols-rounded">view_column</span>
             <span class="toolbar-label">分栏</span>
           </button>
+          <button class="toolbar-btn" data-action="hr" title="分隔线">
+            <span class="material-symbols-rounded">horizontal_rule</span>
+            <span class="toolbar-label">分隔线</span>
+          </button>
         </div>
 
         <div class="toolbar-section">
-          <div class="toolbar-section-title">文本样式</div>
-          <button class="toolbar-btn" data-action="font-select" title="选择字体">
-            <span class="material-symbols-rounded">font_download</span>
-            <span class="toolbar-label">字体</span>
+          <div class="toolbar-section-title">插入元素</div>
+          <button class="toolbar-btn" data-action="table" title="插入表格">
+            <span class="material-symbols-rounded">table</span>
+            <span class="toolbar-label">表格</span>
           </button>
-          <button class="toolbar-btn" data-action="color-text" title="文字颜色">
-            <span class="material-symbols-rounded">format_color_text</span>
-            <span class="toolbar-label">文字色</span>
+          <button class="toolbar-btn" data-action="image" title="插入图片">
+            <span class="material-symbols-rounded">image</span>
+            <span class="toolbar-label">图片</span>
           </button>
-          <button class="toolbar-btn" data-action="color-bg" title="背景颜色">
-            <span class="material-symbols-rounded">format_color_fill</span>
-            <span class="toolbar-label">背景色</span>
+          <button class="toolbar-btn" data-action="link" title="插入链接">
+            <span class="material-symbols-rounded">link</span>
+            <span class="toolbar-label">链接</span>
+          </button>
+          <button class="toolbar-btn" data-action="code" title="代码块">
+            <span class="material-symbols-rounded">code_blocks</span>
+            <span class="toolbar-label">代码</span>
+          </button>
+          <button class="toolbar-btn" data-action="blockquote" title="引用块">
+            <span class="material-symbols-rounded">format_quote</span>
+            <span class="toolbar-label">引用</span>
           </button>
         </div>
       </aside>
 
-      <!-- Editor Area -->
-      <div id="editor-area" class="editor-area">
-        <div class="editor-header">
-          <span class="editor-tab active">
-            <span class="material-symbols-rounded">edit_note</span>
-            Markdown编辑
-          </span>
-        </div>
-        <textarea id="editor" class="editor-textarea" spellcheck="false" placeholder="在此输入Markdown内容...&#10;&#10;支持标准Markdown语法以及TRPG扩展语法：&#10;- {{note 提示内容}} 创建提示框&#10;- {{warning 警告内容}} 创建警告框&#10;- [[2d6+3]] 创建可点击的骰子&#10;- \page 分页&#10;- \column 分栏"></textarea>
-      </div>
-
-      <!-- Resize Handle -->
-      <div id="resize-handle" class="resize-handle"></div>
-
-      <!-- Preview Area -->
-      <div id="preview-area" class="preview-area">
-        <div class="preview-header">
-          <span class="preview-tab active">
-            <span class="material-symbols-rounded">visibility</span>
-            实时预览
-          </span>
-          <div class="preview-controls">
-            <button class="icon-btn small" id="btn-zoom-out" title="缩小">
-              <span class="material-symbols-rounded">zoom_out</span>
+      <!-- WYSIWYG Editor Area -->
+      <div id="editor-wrapper" class="editor-wrapper">
+        <!-- Format Bar (inline toolbar) -->
+        <div id="format-bar" class="format-bar">
+          <div class="format-group">
+            <select id="block-type-select" class="format-select" title="段落格式">
+              <option value="p">正文</option>
+              <option value="h1">标题 1</option>
+              <option value="h2">标题 2</option>
+              <option value="h3">标题 3</option>
+              <option value="h4">标题 4</option>
+            </select>
+          </div>
+          <div class="format-divider"></div>
+          <div class="format-group">
+            <button class="format-btn" data-cmd="bold" title="粗体 (Ctrl+B)">
+              <span class="material-symbols-rounded">format_bold</span>
             </button>
-            <span class="zoom-level" id="zoom-level">100%</span>
-            <button class="icon-btn small" id="btn-zoom-in" title="放大">
-              <span class="material-symbols-rounded">zoom_in</span>
+            <button class="format-btn" data-cmd="italic" title="斜体 (Ctrl+I)">
+              <span class="material-symbols-rounded">format_italic</span>
+            </button>
+            <button class="format-btn" data-cmd="underline" title="下划线 (Ctrl+U)">
+              <span class="material-symbols-rounded">format_underlined</span>
+            </button>
+            <button class="format-btn" data-cmd="strikeThrough" title="删除线">
+              <span class="material-symbols-rounded">strikethrough_s</span>
+            </button>
+            <button class="format-btn" data-cmd="highlight" title="高亮">
+              <span class="material-symbols-rounded">highlight</span>
+            </button>
+          </div>
+          <div class="format-divider"></div>
+          <div class="format-group">
+            <button class="format-btn" data-cmd="insertUnorderedList" title="无序列表">
+              <span class="material-symbols-rounded">format_list_bulleted</span>
+            </button>
+            <button class="format-btn" data-cmd="insertOrderedList" title="有序列表">
+              <span class="material-symbols-rounded">format_list_numbered</span>
+            </button>
+          </div>
+          <div class="format-divider"></div>
+          <div class="format-group">
+            <button class="format-btn" data-cmd="justifyLeft" title="左对齐">
+              <span class="material-symbols-rounded">format_align_left</span>
+            </button>
+            <button class="format-btn" data-cmd="justifyCenter" title="居中对齐">
+              <span class="material-symbols-rounded">format_align_center</span>
+            </button>
+            <button class="format-btn" data-cmd="justifyRight" title="右对齐">
+              <span class="material-symbols-rounded">format_align_right</span>
+            </button>
+          </div>
+          <div class="format-divider"></div>
+          <div class="format-group">
+            <button class="format-btn" id="btn-font-select" title="选择字体">
+              <span class="material-symbols-rounded">font_download</span>
+            </button>
+            <button class="format-btn" id="btn-color-text" title="文字颜色">
+              <span class="material-symbols-rounded">format_color_text</span>
+            </button>
+            <button class="format-btn" id="btn-color-bg" title="背景颜色">
+              <span class="material-symbols-rounded">format_color_fill</span>
+            </button>
+          </div>
+          <div class="format-divider"></div>
+          <div class="format-group">
+            <button class="format-btn" data-cmd="undo" title="撤销 (Ctrl+Z)">
+              <span class="material-symbols-rounded">undo</span>
+            </button>
+            <button class="format-btn" data-cmd="redo" title="重做 (Ctrl+Y)">
+              <span class="material-symbols-rounded">redo</span>
             </button>
           </div>
         </div>
-        <div id="preview-container" class="preview-container">
-          <div id="preview-content" class="preview-content">
-            <!-- Dynamic preview -->
+
+        <!-- Editable Content Area (WYSIWYG) -->
+        <div id="editor-scroll" class="editor-scroll">
+          <div id="page-container" class="page-container">
+            <div id="editor" class="wysiwyg-editor" contenteditable="true" spellcheck="false">
+              <!-- Content is loaded dynamically -->
+            </div>
+            <div id="page-overlay" class="page-overlay">
+              <!-- Page dividers generated by JS -->
+            </div>
           </div>
         </div>
       </div>
@@ -275,14 +270,7 @@
           </div>
         </div>
         <div class="setting-group">
-          <label class="setting-label">编辑器字号</label>
-          <div class="setting-control">
-            <input type="range" id="setting-font-size" min="12" max="24" value="15" class="setting-range" />
-            <span id="setting-font-size-value">15px</span>
-          </div>
-        </div>
-        <div class="setting-group">
-          <label class="setting-label">预览页面样式</label>
+          <label class="setting-label">页面样式</label>
           <div class="setting-control">
             <select id="setting-page-style" class="setting-select">
               <option value="parchment">羊皮纸风格</option>
@@ -338,4 +326,5 @@
 
   <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

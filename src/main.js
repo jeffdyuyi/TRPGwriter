@@ -1,21 +1,29 @@
 /**
- * TRPG写作工坊 — Main Application Entry Point
- * Orchestrates all modules: editor, preview, toolbar, dice, storage, settings
+ * TRPG写作工坊 — Main Application (WYSIWYG)
+ * Orchestrates: editor, toolbar, dice, storage, settings
  */
 
 import './style.css';
-import { renderMarkdown, getWordCount } from './parser.js';
-import { evaluateDiceExpression } from './dice.js';
-import { executeAction, setupShortcuts } from './toolbar.js';
 import {
-  createDocument,
-  saveDocument,
-  loadDocument,
+  executeToolbarAction,
+  executeFormatCommand,
+  applyBlockFormat,
+  applyFont,
+  applyColor,
+  setupKeyboardShortcuts,
+  queryFormatState
+} from './toolbar.js';
+import { rollDice } from './dice.js';
+import {
+  initStorage,
   getAllDocuments,
+  getDocument,
+  saveDocument,
+  createDocument,
   deleteDocument,
-  savePreferences,
   loadPreferences,
-  exportAsHTML
+  savePreferences,
+  exportToHTML
 } from './storage.js';
 
 // =============================================
@@ -23,10 +31,10 @@ import {
 // =============================================
 let state = {
   prefs: loadPreferences(),
-  openFiles: [], // Array of { id, doc, unsaved }
+  openFiles: [],
   activeFileIndex: -1,
   autoSaveTimer: null,
-  isResizing: false
+  colorMode: 'text' // 'text' or 'bg'
 };
 
 // =============================================
@@ -36,122 +44,60 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 const editor = $('#editor');
-const previewContent = $('#preview-content');
-const previewContainer = $('#preview-container');
+const editorScroll = $('#editor-scroll');
 const fileTabs = $('#file-tabs');
 const toolbarPanel = $('#toolbar-panel');
-const zoomLevelEl = $('#zoom-level');
+const formatBar = $('#format-bar');
 
 // =============================================
 //  Initialization
 // =============================================
 async function init() {
-  // Apply saved preferences
+  await initStorage();
   applyPreferences(state.prefs);
+  setupKeyboardShortcuts(editor);
+  setupEventListeners();
+  initColorGrid();
 
-  // Load existing documents or create a new one
+  // Load files or create default
   const docs = await getAllDocuments();
-
-  if (docs.length > 0) {
-    // Restore previously open files
-    const lastOpen = state.prefs.lastOpenFiles || [];
-    if (lastOpen.length > 0) {
-      for (const id of lastOpen) {
-        const doc = await loadDocument(id);
-        if (doc) {
-          state.openFiles.push({ id: doc.id, doc, unsaved: false });
-        }
-      }
-    }
-
-    // If none were restored, open the most recent
-    if (state.openFiles.length === 0) {
-      state.openFiles.push({ id: docs[0].id, doc: docs[0], unsaved: false });
-    }
-
-    // Set active file
-    const activeId = state.prefs.activeFileId;
-    const activeIdx = state.openFiles.findIndex(f => f.id === activeId);
-    state.activeFileIndex = activeIdx >= 0 ? activeIdx : 0;
+  if (docs.length === 0) {
+    await createNewFile();
   } else {
-    // Create a new document
-    const doc = createDocument();
-    await saveDocument(doc);
+    // Open first doc
+    const doc = docs[0];
     state.openFiles.push({ id: doc.id, doc, unsaved: false });
     state.activeFileIndex = 0;
+    loadActiveFile();
+    renderFileTabs();
   }
 
-  // Render initial state
-  renderFileTabs();
-  loadActiveFile();
-
-  // Set up event listeners
-  setupEventListeners();
-  setupShortcuts(editor);
-  setupResizeHandle();
-  setupInlineDiceHandler();
-
-  // Restore editor width if saved
-  if (state.prefs.editorWidth) {
-    const editorArea = $('#editor-area');
-    editorArea.style.flex = `0 0 ${state.prefs.editorWidth}px`;
-  }
-
-  // Sidebar state
-  if (state.prefs.sidebarExpanded) {
-    toolbarPanel.classList.add('expanded');
-  }
-
-  // Initial preview render
-  updatePreview();
+  // Initial layout update
+  requestAnimationFrame(updatePageLayout);
 }
+
+init();
 
 // =============================================
 //  Preferences
 // =============================================
 function applyPreferences(prefs) {
   // Theme
-  document.documentElement.setAttribute('data-theme', prefs.theme);
-
-  // Editor font size
-  document.documentElement.style.setProperty('--editor-font-size', `${prefs.editorFontSize}px`);
+  document.documentElement.setAttribute('data-theme', prefs.theme || 'dark');
 
   // Page style
-  updatePageStyle(prefs.pageStyle);
-
-  // Settings controls
-  const themeSelect = $('#setting-theme');
-  const fontSizeRange = $('#setting-font-size');
-  const fontSizeValue = $('#setting-font-size-value');
-  const pageStyleSelect = $('#setting-page-style');
-  const autoSaveToggle = $('#setting-auto-save');
-
-  if (themeSelect) themeSelect.value = prefs.theme;
-  if (fontSizeRange) {
-    fontSizeRange.value = prefs.editorFontSize;
-    fontSizeValue.textContent = `${prefs.editorFontSize}px`;
-  }
-  if (pageStyleSelect) pageStyleSelect.value = prefs.pageStyle;
-  if (autoSaveToggle) autoSaveToggle.checked = prefs.autoSave;
+  updatePageStyle(prefs.pageStyle || 'parchment');
 }
 
 function updatePageStyle(style) {
-  previewContent.className = 'preview-content';
-  switch (style) {
-    case 'modern':
-      previewContent.classList.add('style-modern');
-      break;
-    case 'dark-fantasy':
-      previewContent.classList.add('style-dark-fantasy');
-      break;
-    default: // parchment
-      break;
+  const wrapper = $('#editor-wrapper');
+  wrapper.classList.remove('page-parchment', 'page-modern', 'page-dark-fantasy');
+  if (style !== 'parchment') {
+    wrapper.classList.add(`page-${style}`);
   }
 }
 
 function persistPreferences() {
-  state.prefs.lastOpenFiles = state.openFiles.map(f => f.id);
-  state.prefs.activeFileId = state.openFiles[state.activeFileIndex]?.id || null;
   savePreferences(state.prefs);
 }
 
@@ -160,210 +106,241 @@ function persistPreferences() {
 // =============================================
 function renderFileTabs() {
   fileTabs.innerHTML = '';
-  state.openFiles.forEach((file, index) => {
-    const tab = document.createElement('div');
-    tab.className = `file-tab${index === state.activeFileIndex ? ' active' : ''}`;
+  state.openFiles.forEach((file, i) => {
+    const tab = document.createElement('button');
+    tab.className = `file-tab${i === state.activeFileIndex ? ' active' : ''}`;
     tab.innerHTML = `
-      ${file.unsaved ? '<span class="tab-unsaved"></span>' : ''}
-      <span class="tab-name">${escapeHTML(file.doc.title)}</span>
-      <button class="tab-close" data-index="${index}" title="关闭">&times;</button>
+      <span class="tab-name">${file.doc.title || '未命名'}</span>
+      ${file.unsaved ? '<span class="unsaved-dot"></span>' : ''}
+      <span class="tab-close material-symbols-rounded" style="font-size:14px">close</span>
     `;
     tab.addEventListener('click', (e) => {
-      if (e.target.closest('.tab-close')) return;
-      switchToFile(index);
+      if (e.target.classList.contains('tab-close')) {
+        closeFile(i);
+      } else {
+        switchToFile(i);
+      }
     });
     fileTabs.appendChild(tab);
-  });
-
-  // Close buttons
-  fileTabs.querySelectorAll('.tab-close').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeFile(parseInt(btn.dataset.index));
-    });
   });
 }
 
 function switchToFile(index) {
   if (index === state.activeFileIndex) return;
-
-  // Save current content to memory
   saveCurrentToMemory();
-
   state.activeFileIndex = index;
   loadActiveFile();
   renderFileTabs();
-  persistPreferences();
 }
 
 function loadActiveFile() {
   const file = state.openFiles[state.activeFileIndex];
   if (!file) return;
-  editor.value = file.doc.content;
-  updatePreview();
+  if (!file) return;
+  editor.innerHTML = file.doc.content || '';
+  // Update layout after loading content
+  requestAnimationFrame(updatePageLayout);
 }
 
 function saveCurrentToMemory() {
   const file = state.openFiles[state.activeFileIndex];
   if (!file) return;
-  const currentContent = editor.value;
-  if (currentContent !== file.doc.content) {
-    file.doc.content = currentContent;
+  const content = editor.innerHTML;
+  if (content !== file.doc.content) {
+    file.doc.content = content;
     file.unsaved = true;
+    renderFileTabs();
   }
 }
 
 async function closeFile(index) {
   const file = state.openFiles[index];
-
   if (file.unsaved) {
-    if (!confirm(`"${file.doc.title}" 尚未保存，确定要关闭吗？`)) {
-      return;
+    const yes = confirm(`"${file.doc.title}" 有未保存的更改，是否保存？`);
+    if (yes) {
+      await saveDocument(file.doc);
     }
   }
-
   state.openFiles.splice(index, 1);
-
   if (state.openFiles.length === 0) {
-    // Create new file if all closed
-    const doc = createDocument();
-    await saveDocument(doc);
-    state.openFiles.push({ id: doc.id, doc, unsaved: false });
-    state.activeFileIndex = 0;
-  } else if (state.activeFileIndex >= state.openFiles.length) {
-    state.activeFileIndex = state.openFiles.length - 1;
-  } else if (index < state.activeFileIndex) {
-    state.activeFileIndex--;
-  } else if (index === state.activeFileIndex) {
-    state.activeFileIndex = Math.min(state.activeFileIndex, state.openFiles.length - 1);
+    await createNewFile();
+    return;
   }
-
+  if (state.activeFileIndex >= state.openFiles.length) {
+    state.activeFileIndex = state.openFiles.length - 1;
+  }
   loadActiveFile();
   renderFileTabs();
-  persistPreferences();
 }
 
 async function createNewFile() {
-  saveCurrentToMemory();
-
-  const title = prompt('请输入文件名称：', '未命名文档') || '未命名文档';
-  const doc = createDocument(title);
-  await saveDocument(doc);
-
+  const doc = await createDocument('未命名文档', getDefaultContent());
   state.openFiles.push({ id: doc.id, doc, unsaved: false });
   state.activeFileIndex = state.openFiles.length - 1;
-
   loadActiveFile();
   renderFileTabs();
-  persistPreferences();
-  showToast(`已创建 "${title}"`, 'success');
+}
+
+function getDefaultContent() {
+  return `
+<h1>幽暗城堡的秘密</h1>
+<p><em>一个适合4-6名3级冒险者的单次冒险模组</em></p>
+
+<blockquote>
+<p><em>"城堡高塔上的光芒已经亮了三个夜晚，据说那里曾是一位强大巫师的居所。没有人敢靠近——除了你们。"</em></p>
+<p style="text-align:right">— 碎石镇 · 布雷登旅店老板</p>
+</blockquote>
+
+<h2>冒险背景</h2>
+<p>碎石镇东北方向两日路程的山谷中，矗立着一座被遗忘的古老城堡。近日，城堡塔顶突然亮起了诡异的<strong>紫色光芒</strong>，附近的森林中也开始出现不死生物的踪迹。镇上的长老<strong>艾拉·风语者</strong>希望一队冒险者前去调查此事。</p>
+
+<div class="trpg-note">
+<p><strong>给地下城主的提示：</strong>这个冒险可以作为更大战役的开端。城堡中的线索——巫师的日记和传送门——可以引导玩家发现更深层的阴谋。建议在冒险开始前与玩家讨论角色的动机和背景关联。</p>
+</div>
+
+<h2>第一幕：碎石镇</h2>
+<p>冒险者们在<strong>布雷登旅店</strong>得知以下信息：</p>
+<ul>
+<li>城堡曾属于巫师<strong>马拉基·暗星</strong>，他在五十年前突然消失</li>
+<li>最近有三名猎人在城堡附近失踪</li>
+<li>有人报告看到了发光的骷髅在森林中游荡</li>
+</ul>
+
+<h3>任务奖励</h3>
+<table>
+<thead><tr><th>任务目标</th><th>奖励</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td>调查城堡异变原因</td><td>200 gp</td><td>由长老支付</td></tr>
+<tr><td>找到失踪猎人</td><td>100 gp / 人</td><td>猎人家属凑齐</td></tr>
+<tr><td>消除不死生物威胁</td><td>150 gp</td><td>额外奖励</td></tr>
+</tbody>
+</table>
+
+<h2>第二幕：城堡遭遇</h2>
+<p>进入城堡后，冒险者在大厅遭遇守卫。投掷攻击：<span class="dice-inline" data-dice="1d20+4" contenteditable="false">1d20+4</span></p>
+
+<div class="trpg-stat-block">
+<h3>暗影骷髅</h3>
+<p class="stat-subtitle"><em>中型 不死生物，混乱邪恶</em></p>
+<p class="stat-line"><strong>护甲等级</strong> 13（残破护甲）</p>
+<p class="stat-line"><strong>生命值</strong> 26 (4d8 + 8)</p>
+<p class="stat-line"><strong>速度</strong> 30尺</p>
+<table><thead><tr><th>力量</th><th>敏捷</th><th>体质</th><th>智力</th><th>感知</th><th>魅力</th></tr></thead>
+<tbody><tr><td>14(+2)</td><td>16(+3)</td><td>15(+2)</td><td>6(-2)</td><td>8(-1)</td><td>5(-3)</td></tr></tbody></table>
+<p class="stat-line"><strong>伤害免疫</strong> 毒素</p>
+<p class="stat-line"><strong>状态免疫</strong> 力竭, 中毒</p>
+<p class="stat-line"><strong>感官</strong> 黑暗视觉 60尺，被动感知 9</p>
+<p class="stat-line"><strong>语言</strong> 能理解生前的语言但无法说话</p>
+<p class="stat-line"><strong>挑战等级</strong> 1 (200 XP)</p>
+<p><strong><em>暗影伪装。</em></strong> 骷髅在昏暗光照或黑暗中进行的敏捷（隐匿）检定具有优势。</p>
+<h4>动作</h4>
+<p><strong><em>黑曜石短剑。</em></strong> <em>近战武器攻击：</em>命中 <span class="dice-inline" data-dice="1d20+5" contenteditable="false">1d20+5</span>，触及5尺，单一目标。命中：<span class="dice-inline" data-dice="1d6+3" contenteditable="false">1d6+3</span> 穿刺伤害 外加 <span class="dice-inline" data-dice="1d4" contenteditable="false">1d4</span> 黯蚀伤害。</p>
+<p><strong><em>死灵之弓。</em></strong> <em>远程武器攻击：</em>命中 <span class="dice-inline" data-dice="1d20+5" contenteditable="false">1d20+5</span>，射程 80/320尺，单一目标。命中：<span class="dice-inline" data-dice="1d8+3" contenteditable="false">1d8+3</span> 穿刺伤害。</p>
+</div>
+
+<div class="trpg-warning">
+<p><strong>战斗平衡警告：</strong>如果团队缺少治疗职业，建议将暗影骷髅的数量从4个减少到2-3个，或将暗影伪装特性的优势改为普通骰。</p>
+</div>
+
+<h2>宝藏与魔法物品</h2>
+<p>在巫师的书房中，冒险者找到了以下物品：</p>
+
+<div class="trpg-item-card">
+<h4>暗星法杖 +1</h4>
+<p class="item-meta">武器（长棍），珍稀（需同调）</p>
+<p class="item-props"><strong>类型：</strong>法术聚焦器</p>
+<p class="item-props"><strong>属性：</strong>攻击和伤害骰 +1</p>
+<p>这根漆黑的法杖顶端嵌有一颗缓缓旋转的紫色宝石。当你使用此法杖作为聚焦器施展法术时，法术豁免DC +1。此外，你可以使用一个附赠动作让宝石发出相当于火把的光芒，或熄灭它。</p>
+<p><strong>暗星庇护（1/长休）。</strong> 当你受到黯蚀伤害时，你可以用反应动作消耗此能力，使该伤害减半。</p>
+</div>
+
+<h2>关键法术</h2>
+<p>巫师马拉基在日记中提到了他最常使用的法术：</p>
+
+<div class="trpg-spell-card">
+<h4>暗影之触</h4>
+<p class="spell-meta">1环 死灵学</p>
+<p class="spell-props"><strong>施法时间：</strong>1 动作</p>
+<p class="spell-props"><strong>施法距离：</strong>触及</p>
+<p class="spell-props"><strong>法术成分：</strong>V, S</p>
+<p class="spell-props"><strong>持续时间：</strong>立即</p>
+<p>你的手上涌出暗影能量。对触及范围内一个生物进行近战法术攻击：<span class="dice-inline" data-dice="1d20+5" contenteditable="false">1d20+5</span>。命中时，目标受到 <span class="dice-inline" data-dice="3d6" contenteditable="false">3d6</span> 点黯蚀伤害，而你回复等同于造成伤害一半的生命值。</p>
+<p><strong>升环施法：</strong>使用2环或更高法术位施展时，每高一环伤害增加 <span class="dice-inline" data-dice="1d6" contenteditable="false">1d6</span>。</p>
+</div>
+
+<hr>
+<p style="text-align:center"><em>— 冒险结束 —</em></p>
+<p style="text-align:center">感谢游玩《幽暗城堡的秘密》</p>`;
 }
 
 // =============================================
-//  Preview
-// =============================================
-let previewDebounceTimer = null;
 
-function updatePreview() {
-  const markdown = editor.value;
-  const html = renderMarkdown(markdown);
-  previewContent.innerHTML = html;
-}
-
-function debouncedUpdatePreview() {
-  clearTimeout(previewDebounceTimer);
-  previewDebounceTimer = setTimeout(updatePreview, 150);
-}
-
-// =============================================
 //  Auto Save
 // =============================================
 function scheduleAutoSave() {
   if (!state.prefs.autoSave) return;
-
   clearTimeout(state.autoSaveTimer);
   state.autoSaveTimer = setTimeout(async () => {
     const file = state.openFiles[state.activeFileIndex];
-    if (file && file.unsaved) {
-      file.doc.content = editor.value;
+    if (!file) return;
+    saveCurrentToMemory();
+    if (file.unsaved) {
+      file.doc.updatedAt = Date.now();
       await saveDocument(file.doc);
       file.unsaved = false;
       renderFileTabs();
+      showToast('已自动保存', 'info');
     }
   }, 2000);
 }
 
 // =============================================
-//  Zoom
+//  Format State Tracking
 // =============================================
-let zoomLevel = 100;
-
-function setZoom(level) {
-  zoomLevel = Math.max(50, Math.min(200, level));
-  previewContent.style.transform = `scale(${zoomLevel / 100})`;
-  previewContent.style.transformOrigin = 'top center';
-  zoomLevelEl.textContent = `${zoomLevel}%`;
-}
-
-// =============================================
-//  Resize Handle
-// =============================================
-function setupResizeHandle() {
-  const handle = $('#resize-handle');
-  const editorArea = $('#editor-area');
-
-  let startX, startWidth;
-
-  handle.addEventListener('mousedown', (e) => {
-    state.isResizing = true;
-    startX = e.clientX;
-    startWidth = editorArea.offsetWidth;
-    handle.classList.add('active');
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-
-    const onMouseMove = (e) => {
-      const dx = e.clientX - startX;
-      const newWidth = Math.max(300, Math.min(window.innerWidth - 400, startWidth + dx));
-      editorArea.style.flex = `0 0 ${newWidth}px`;
-    };
-
-    const onMouseUp = () => {
-      state.isResizing = false;
-      handle.classList.remove('active');
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-
-      // Save width preference
-      state.prefs.editorWidth = editorArea.offsetWidth;
-      persistPreferences();
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+function updateFormatBarState() {
+  const format = queryFormatState();
+  $$('.format-btn[data-cmd]').forEach(btn => {
+    const cmd = btn.dataset.cmd;
+    if (format[cmd] !== undefined) {
+      btn.classList.toggle('active', format[cmd]);
+    }
   });
+
+  // Detect block format
+  const block = document.queryCommandValue('formatBlock');
+  const select = $('#block-type-select');
+  if (select) {
+    const tagMap = { h1: 'h1', h2: 'h2', h3: 'h3', h4: 'h4', p: 'p' };
+    const normalizedBlock = block.replace(/<|>/g, '').toLowerCase();
+    select.value = tagMap[normalizedBlock] || 'p';
+  }
 }
 
 // =============================================
-//  Inline Dice (from preview)
+//  Inline Dice Handler
 // =============================================
 function setupInlineDiceHandler() {
-  window.__rollInlineDice = function (el) {
-    const formula = el.dataset.formula;
-    try {
-      const result = evaluateDiceExpression(formula);
-      const resultSpan = el.querySelector('.dice-result');
-      resultSpan.textContent = ` = ${result.total}`;
-      el.classList.add('rolled');
-      el.title = `${result.formula}: ${result.details} = ${result.total}`;
-
-      setTimeout(() => el.classList.remove('rolled'), 500);
-    } catch (err) {
-      showToast(`骰子错误: ${err.message}`, 'error');
+  editor.addEventListener('click', (e) => {
+    const diceEl = e.target.closest('.dice-inline');
+    if (diceEl) {
+      e.preventDefault();
+      e.stopPropagation();
+      const formula = diceEl.dataset.dice;
+      if (!formula) return;
+      try {
+        const result = rollDice(formula);
+        diceEl.textContent = `${formula} = ${result.total}`;
+        diceEl.title = `骰点: [${result.rolls.join(', ')}]${result.modifier ? ' + ' + result.modifier : ''}`;
+        diceEl.classList.add('rolled');
+        setTimeout(() => {
+          diceEl.textContent = formula;
+          diceEl.classList.remove('rolled');
+        }, 3000);
+      } catch (err) {
+        showToast('骰子公式错误: ' + err.message, 'error');
+      }
     }
-  };
+  });
 }
 
 // =============================================
@@ -379,48 +356,42 @@ function closeDiceModal() {
 }
 
 function rollDiceFromModal() {
-  const input = $('#dice-formula');
-  const formula = input.value.trim();
+  const formula = $('#dice-formula').value.trim();
   if (!formula) return;
-
   try {
-    const result = evaluateDiceExpression(formula);
+    const result = rollDice(formula);
     addDiceResult(result);
   } catch (err) {
-    showToast(`骰子错误: ${err.message}`, 'error');
+    showToast('骰子公式错误: ' + err.message, 'error');
   }
 }
 
 function addDiceResult(result) {
   const container = $('#dice-results');
-
-  // Remove placeholder
   const placeholder = container.querySelector('.dice-placeholder');
   if (placeholder) placeholder.remove();
 
-  const item = document.createElement('div');
-  item.className = 'dice-result-item';
-  item.innerHTML = `
+  const entry = document.createElement('div');
+  entry.className = 'dice-result-entry';
+  entry.innerHTML = `
     <div>
       <div class="dice-result-formula">${result.formula}</div>
-      <div class="dice-result-details">${result.details}</div>
+      <div class="dice-result-detail">[${result.rolls.join(', ')}]${result.modifier ? ' + ' + result.modifier : ''}</div>
     </div>
-    <div class="dice-result-total">${result.total}</div>
+    <div class="dice-result-value">${result.total}</div>
   `;
-
-  container.insertBefore(item, container.firstChild);
-
-  // Limit history
-  while (container.children.length > 50) {
-    container.removeChild(container.lastChild);
-  }
+  container.insertBefore(entry, container.firstChild);
 }
 
 // =============================================
 //  Settings Modal
 // =============================================
 function openSettingsModal() {
-  $('#settings-modal').classList.remove('hidden');
+  const modal = $('#settings-modal');
+  $('#setting-theme').value = state.prefs.theme || 'dark';
+  $('#setting-page-style').value = state.prefs.pageStyle || 'parchment';
+  $('#setting-auto-save').checked = state.prefs.autoSave !== false;
+  modal.classList.remove('hidden');
 }
 
 function closeSettingsModal() {
@@ -431,37 +402,42 @@ function closeSettingsModal() {
 //  Popovers
 // =============================================
 function showPopover(popoverId, anchorEl) {
-  const popover = $(`#${popoverId}`);
+  const popover = document.getElementById(popoverId);
   const rect = anchorEl.getBoundingClientRect();
-
-  popover.style.left = `${rect.right + 8}px`;
-  popover.style.top = `${rect.top}px`;
+  popover.style.top = (rect.bottom + 4) + 'px';
+  popover.style.left = rect.left + 'px';
   popover.classList.remove('hidden');
 
-  // Close on outside click
   const closeHandler = (e) => {
-    if (!popover.contains(e.target) && !anchorEl.contains(e.target)) {
+    if (!popover.contains(e.target) && e.target !== anchorEl) {
       popover.classList.add('hidden');
-      document.removeEventListener('click', closeHandler);
+      document.removeEventListener('mousedown', closeHandler);
     }
   };
-  setTimeout(() => document.addEventListener('click', closeHandler), 0);
+  setTimeout(() => document.addEventListener('mousedown', closeHandler), 0);
 }
 
 function initColorGrid() {
-  const grid = $('#color-grid');
   const colors = [
-    '#2c3e50', '#34495e', '#7f8c8d', '#95a5a6',
-    '#e74c3c', '#c0392b', '#e67e22', '#d35400',
-    '#f1c40f', '#f39c12', '#2ecc71', '#27ae60',
-    '#1abc9c', '#16a085', '#3498db', '#2980b9',
-    '#9b59b6', '#8e44ad', '#ecf0f1', '#bdc3c7',
-    '#58180d', '#702020', '#8b6914', '#c9ad6a',
+    '#c0392b', '#e74c3c', '#e67e22', '#f39c12', '#f1c40f', '#27ae60',
+    '#2ecc71', '#1abc9c', '#2980b9', '#3498db', '#8e44ad', '#9b59b6',
+    '#2c3e50', '#34495e', '#7f8c8d', '#95a5a6', '#ecf0f1', '#ffffff',
+    '#58180d', '#7a2a15', '#c9ad6a', '#1a1a2e', '#000000', '#333333',
   ];
 
-  grid.innerHTML = colors.map(c =>
-    `<button class="color-swatch" data-color="${c}" style="background:${c}" title="${c}"></button>`
-  ).join('');
+  const grid = $('#color-grid');
+  grid.innerHTML = '';
+  colors.forEach(color => {
+    const swatch = document.createElement('button');
+    swatch.className = 'color-swatch';
+    swatch.style.background = color;
+    swatch.addEventListener('click', () => {
+      applyColor(color, state.colorMode);
+      $('#color-popover').classList.add('hidden');
+      editor.focus();
+    });
+    grid.appendChild(swatch);
+  });
 }
 
 // =============================================
@@ -473,11 +449,10 @@ function showToast(message, type = 'info') {
   toast.className = `toast ${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-
   setTimeout(() => {
-    toast.style.animation = 'toastExit 0.3s ease forwards';
+    toast.classList.add('fade-out');
     setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  }, 2500);
 }
 
 // =============================================
@@ -485,254 +460,119 @@ function showToast(message, type = 'info') {
 // =============================================
 function handleExportPDF() {
   saveCurrentToMemory();
-  updatePreview();
-
-  // Open a new window with just the preview for printing
-  const printWindow = window.open('', '_blank');
   const file = state.openFiles[state.activeFileIndex];
+  if (!file) return;
 
-  printWindow.document.write(`<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <title>${file.doc.title}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --font-serif: 'Noto Serif SC', 'Georgia', serif;
-      --font-sans: 'Noto Sans SC', 'Segoe UI', sans-serif;
-      --font-display: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-      --font-mono: 'Cascadia Code', 'Consolas', monospace;
-      --radius-sm: 4px;
-      --radius-md: 8px;
-    }
-    body { 
-      font-family: var(--font-serif); 
-      max-width: 850px; 
-      margin: 0 auto; 
-      padding: 48px 56px; 
-      background: #fdf6e3; 
-      color: #2c2416; 
-      font-size: 15px; 
-      line-height: 1.8; 
-    }
-    h1 { font-family: var(--font-display); font-size: 32px; color: #58180d; border-bottom: 4px solid #c9ad6a; padding-bottom: 6px; letter-spacing: 1px; margin: 24px 0 12px; }
-    h2 { font-family: var(--font-display); font-size: 24px; color: #58180d; border-bottom: 2px solid #c9ad6a; padding-bottom: 4px; margin: 20px 0 8px; }
-    h3 { font-size: 19px; color: #58180d; border-bottom: 1px solid rgba(201,173,106,0.4); padding-bottom: 3px; margin: 16px 0 6px; }
-    h4 { font-size: 16px; color: #58180d; font-style: italic; margin: 14px 0 4px; }
-    h5 { font-size: 14px; color: #702020; margin: 12px 0 4px; }
-    p { margin: 8px 0; text-align: justify; }
-    strong { color: #3e1f0a; }
-    em { color: #5a341e; }
-    a { color: #4b72a8; text-decoration: none; }
-    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
-    thead tr { background: #58180d; color: #fdf6e3; }
-    th { padding: 8px 12px; font-weight: 600; text-align: left; }
-    td { padding: 7px 12px; border-bottom: 1px solid rgba(201,173,106,0.3); }
-    tbody tr:nth-child(even) { background: rgba(201,173,106,0.06); }
-    blockquote { padding: 12px 20px; border-left: 4px solid #c9ad6a; background: rgba(201,173,106,0.08); font-style: italic; margin: 12px 0; border-radius: 0 4px 4px 0; }
-    hr { border: none; height: 2px; background: linear-gradient(to right, transparent, #c9ad6a, transparent); margin: 20px 0; }
-    code { font-family: var(--font-mono); font-size: 0.9em; background: rgba(88,24,13,0.06); padding: 2px 6px; border-radius: 3px; color: #702020; }
-    pre { background: #2c2416; color: #fdf6e3; padding: 16px 20px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: 13px; }
-    pre code { background: none; color: inherit; }
-    mark { background: rgba(255,225,0,0.3); padding: 1px 4px; border-radius: 2px; }
-    .trpg-note { background: linear-gradient(135deg, #f0e4c8, #e8dbb8); border: 2px solid #c9ad6a; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
-    .trpg-warning { background: linear-gradient(135deg, #4a1a1a, #3a1515); border: 2px solid #8b2500; border-radius: 8px; padding: 16px 20px; margin: 16px 0; color: #f0d0c0; }
-    .trpg-warning h5 { color: #ff6b35; }
-    .trpg-stat-block { background: linear-gradient(to bottom, #fdf6e3, #f4e8cc); border-top: 3px solid #c9ad6a; border-bottom: 3px solid #c9ad6a; padding: 16px 20px; margin: 20px 0; font-size: 14px; }
-    .trpg-stat-block h3 { font-family: var(--font-display); font-size: 22px; border: none; padding: 0; margin: 0 0 2px; }
-    .trpg-spell { background: linear-gradient(135deg, #e8e0f0, #ddd6ea); border: 2px solid #7b68a8; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
-    .trpg-spell h5 { color: #4a3570; }
-    .trpg-item { background: linear-gradient(135deg, #e0eef0, #d0e4e8); border: 2px solid #4a8b9a; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
-    .trpg-item h5 { color: #2a5a68; }
-    .dice-roll { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; background: linear-gradient(135deg, #58180d, #702020); color: #fdf6e3; border-radius: 20px; font-weight: 600; font-size: 13px; font-family: var(--font-sans); }
-    .preview-page-break { page-break-before: always; margin: 0; height: 0; }
-    ul, ol { padding-left: 28px; margin: 8px 0; }
-    li { margin: 4px 0; }
-    @media print {
-      body { padding: 20mm 25mm; }
-      .preview-page-break { page-break-before: always; height: 0; background: transparent; }
-    }
-  </style>
-</head>
-<body>
-${previewContent.innerHTML}
-<script>
-  window.onload = function() {
-    setTimeout(function() { window.print(); }, 500);
-  };
-<\/script>
-</body>
-</html>`);
-  printWindow.document.close();
-  showToast('正在准备打印...', 'info');
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>${file.doc.title || 'TRPG文档'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet" />
+<style>
+body {
+  font-family: 'Noto Serif SC', serif;
+  line-height: 1.7;
+  font-size: 15px;
+  color: #333;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 20px;
+}
+h1, h2, h3 { font-family: 'ZCOOL XiaoWei', serif; color: #58180d; }
+h1 { border-bottom: 3px solid #c9ad6a; padding-bottom: 4px; }
+h2 { border-bottom: 2px solid #c9ad6a; padding-bottom: 3px; }
+h3 { border-bottom: 1px solid #c9ad6a; }
+h4 { color: #58180d; font-style: italic; }
+blockquote { border-left: 4px solid #c9ad6a; padding: 0.4em 1em; background: rgba(201,173,106,0.12); font-style: italic; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #58180d; color: #fff; padding: 6px 10px; text-align: left; }
+td { padding: 5px 10px; border-bottom: 1px solid #c9ad6a; }
+.trpg-note { background: #f5ecd7; border-left: 4px solid #c9ad6a; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
+.trpg-note::before { content: '📜 提示'; display: block; font-weight: 700; color: #7c6420; margin-bottom: 4px; font-size: 0.85em; }
+.trpg-warning { background: #fdf0e8; border-left: 4px solid #e74c3c; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
+.trpg-warning::before { content: '⚠️ 警告'; display: block; font-weight: 700; color: #c0392b; margin-bottom: 4px; font-size: 0.85em; }
+.trpg-stat-block { background: linear-gradient(180deg, #fdf6e3, #f5e6c8); border: 2px solid #58180d; padding: 16px 20px; margin: 16px 0; font-size: 0.92em; }
+.trpg-stat-block::before, .trpg-stat-block::after { content: ''; display: block; height: 6px; background: linear-gradient(90deg, #58180d 0%, #c9ad6a 45%, #c9ad6a 55%, #58180d 100%); margin: 4px -20px 8px; }
+.trpg-stat-block::after { margin: 8px -20px 4px; }
+.trpg-stat-block h3 { color: #58180d; font-size: 1.4em; border: none; }
+.trpg-stat-block table th { background: transparent; color: #58180d; text-align: center; border-bottom: 2px solid #58180d; }
+.trpg-stat-block table td { text-align: center; border: none; }
+.trpg-spell-card { background: #f8f0ff; border: 1px solid #9b59b6; border-top: 3px solid #9b59b6; border-radius: 6px; padding: 14px 18px; margin: 12px 0; }
+.trpg-spell-card h4 { color: #6c3483; font-style: normal; border: none; }
+.trpg-item-card { background: #f8fff5; border: 1px solid #27ae60; border-top: 3px solid #27ae60; border-radius: 6px; padding: 14px 18px; margin: 12px 0; }
+.trpg-item-card h4 { color: #1e8449; font-style: normal; border: none; }
+.dice-inline { background: #58180d; color: #fdf6e3; padding: 1px 8px; border-radius: 4px; font-size: 0.88em; font-weight: 600; }
+.page-break { page-break-after: always; break-after: page; border: none; height: 0; margin: 0; }
+hr { border: none; border-top: 2px solid #c9ad6a; margin: 1em 0; }
+img { max-width: 100%; }
+@media print {
+  .page-break { page-break-after: always; }
+}
+</style>
+</head><body>${editor.innerHTML}</body></html>`);
+  printWin.document.close();
+  setTimeout(() => { printWin.print(); }, 500);
 }
 
-function handleExportHTML() {
+async function handleExportHTML() {
   saveCurrentToMemory();
-  updatePreview();
-
   const file = state.openFiles[state.activeFileIndex];
-  exportAsHTML(file.doc, previewContent.innerHTML);
-  showToast(`已导出 "${file.doc.title}.html"`, 'success');
+  if (!file) return;
+  try {
+    const html = await exportToHTML(file.doc);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${file.doc.title || 'trpg-doc'}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('HTML导出成功', 'success');
+  } catch (err) {
+    showToast('导出失败: ' + err.message, 'error');
+  }
 }
 
 // =============================================
 //  Event Listeners
 // =============================================
 function setupEventListeners() {
-  // Editor input
+  // Editor input — schedule auto save & update layout
   editor.addEventListener('input', () => {
-    const file = state.openFiles[state.activeFileIndex];
-    if (file) {
-      file.unsaved = true;
-      renderFileTabs();
-    }
-    debouncedUpdatePreview();
     scheduleAutoSave();
+    updatePageLayout();
   });
 
-  // Toolbar buttons
-  toolbarPanel.addEventListener('click', (e) => {
-    const btn = e.target.closest('.toolbar-btn');
-    if (!btn) return;
+  // Window resize — update layout
+  window.addEventListener('resize', () => {
+    requestAnimationFrame(updatePageLayout);
+  });
 
-    const action = btn.dataset.action;
+  // ResizeObserver for robust content changes (images loading, etc)
+  const resizeObserver = new ResizeObserver(() => {
+    updatePageLayout();
+  });
+  resizeObserver.observe(editor);
 
-    // Special actions that open popovers
-    if (action === 'font-select') {
-      showPopover('font-popover', btn);
-      return;
+  // Track format state on selection change
+  document.addEventListener('selectionchange', () => {
+    if (document.activeElement === editor || editor.contains(document.activeElement)) {
+      updateFormatBarState();
     }
-    if (action === 'color-text') {
-      $('#color-popover-title').textContent = '文字颜色';
-      $('#color-popover').dataset.mode = 'text';
-      showPopover('color-popover', btn);
-      return;
-    }
-    if (action === 'color-bg') {
-      $('#color-popover-title').textContent = '背景颜色';
-      $('#color-popover').dataset.mode = 'bg';
-      showPopover('color-popover', btn);
-      return;
-    }
-
-    executeAction(action, editor);
   });
 
-  // Sidebar toggle
-  $('#btn-toggle-sidebar').addEventListener('click', () => {
-    toolbarPanel.classList.toggle('expanded');
-    state.prefs.sidebarExpanded = toolbarPanel.classList.contains('expanded');
-    persistPreferences();
-  });
-
-  // New file
-  $('#btn-new-file').addEventListener('click', createNewFile);
-
-  // Dice modal
-  $('#btn-dice').addEventListener('click', openDiceModal);
-  $('#btn-close-dice').addEventListener('click', closeDiceModal);
-  $('#dice-modal .modal-overlay').addEventListener('click', closeDiceModal);
-  $('#btn-roll-dice').addEventListener('click', rollDiceFromModal);
-  $('#dice-formula').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') rollDiceFromModal();
-  });
-
-  // Quick dice buttons
-  $$('.dice-quick-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const formula = btn.dataset.dice;
-      $('#dice-formula').value = formula;
-      try {
-        const result = evaluateDiceExpression(formula);
-        addDiceResult(result);
-      } catch (err) {
-        showToast(`骰子错误: ${err.message}`, 'error');
-      }
-    });
-  });
-
-  // Export buttons
-  $('#btn-export-pdf').addEventListener('click', handleExportPDF);
-  $('#btn-export-html').addEventListener('click', handleExportHTML);
-
-  // Settings
-  $('#btn-settings').addEventListener('click', openSettingsModal);
-  $('#btn-close-settings').addEventListener('click', closeSettingsModal);
-  $('#settings-modal .modal-overlay').addEventListener('click', closeSettingsModal);
-
-  // Settings controls
-  $('#setting-theme').addEventListener('change', (e) => {
-    state.prefs.theme = e.target.value;
-    applyPreferences(state.prefs);
-    persistPreferences();
-  });
-
-  $('#setting-font-size').addEventListener('input', (e) => {
-    const size = parseInt(e.target.value);
-    state.prefs.editorFontSize = size;
-    $('#setting-font-size-value').textContent = `${size}px`;
-    applyPreferences(state.prefs);
-    persistPreferences();
-  });
-
-  $('#setting-page-style').addEventListener('change', (e) => {
-    state.prefs.pageStyle = e.target.value;
-    updatePageStyle(e.target.value);
-    persistPreferences();
-  });
-
-  $('#setting-auto-save').addEventListener('change', (e) => {
-    state.prefs.autoSave = e.target.checked;
-    persistPreferences();
-  });
-
-  // Zoom
-  $('#btn-zoom-in').addEventListener('click', () => setZoom(zoomLevel + 10));
-  $('#btn-zoom-out').addEventListener('click', () => setZoom(zoomLevel - 10));
-
-  // Font popover
-  $$('.font-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const font = btn.dataset.font;
-      const selected = editor.value.substring(editor.selectionStart, editor.selectionEnd);
-      if (selected) {
-        // Wrap with HTML span
-        const wrapped = `<span style="font-family:'${font}'">${selected}</span>`;
-        const start = editor.selectionStart;
-        const end = editor.selectionEnd;
-        editor.value = editor.value.substring(0, start) + wrapped + editor.value.substring(end);
-        editor.dispatchEvent(new Event('input', { bubbles: true }));
-      } else {
-        showToast('请先选中文本再应用字体', 'info');
-      }
-      $('#font-popover').classList.add('hidden');
-    });
-  });
-
-  // Color popover
-  initColorGrid();
-
-  $('#color-grid').addEventListener('click', (e) => {
-    const swatch = e.target.closest('.color-swatch');
-    if (!swatch) return;
-    applyColor(swatch.dataset.color);
-    $('#color-popover').classList.add('hidden');
-  });
-
-  $('#custom-color').addEventListener('change', (e) => {
-    applyColor(e.target.value);
-    $('#color-popover').classList.add('hidden');
-  });
+  // Inline dice
+  setupInlineDiceHandler();
 
   // Ctrl+S save
   document.addEventListener('keydown', async (e) => {
-    if (e.ctrlKey && e.key === 's') {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
+      saveCurrentToMemory();
       const file = state.openFiles[state.activeFileIndex];
       if (file) {
-        file.doc.content = editor.value;
+        file.doc.updatedAt = Date.now();
         await saveDocument(file.doc);
         file.unsaved = false;
         renderFileTabs();
@@ -741,53 +581,167 @@ function setupEventListeners() {
     }
   });
 
-  // Before unload — save
-  window.addEventListener('beforeunload', () => {
-    saveCurrentToMemory();
-    const file = state.openFiles[state.activeFileIndex];
-    if (file) {
-      file.doc.content = editor.value;
-      // Synchronous save via localStorage fallback
-      const docs = JSON.parse(localStorage.getItem('trpg-docs') || '{}');
-      file.doc.updatedAt = Date.now();
-      docs[file.doc.id] = file.doc;
-      localStorage.setItem('trpg-docs', JSON.stringify(docs));
+  // Header buttons
+  $('#btn-toggle-sidebar').addEventListener('click', () => {
+    toolbarPanel.classList.toggle('collapsed');
+  });
+  $('#btn-new-file').addEventListener('click', () => createNewFile());
+  $('#btn-dice').addEventListener('click', openDiceModal);
+  $('#btn-export-pdf').addEventListener('click', handleExportPDF);
+  $('#btn-export-html').addEventListener('click', handleExportHTML);
+  $('#btn-settings').addEventListener('click', openSettingsModal);
+
+  // Left toolbar actions (TRPG elements)
+  toolbarPanel.addEventListener('click', (e) => {
+    const btn = e.target.closest('.toolbar-btn');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action) {
+      executeToolbarAction(action, editor);
     }
+  });
+
+  // Format bar — command buttons
+  formatBar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.format-btn[data-cmd]');
+    if (btn) {
+      e.preventDefault();
+      executeFormatCommand(btn.dataset.cmd);
+      editor.focus();
+      updateFormatBarState();
+    }
+  });
+
+  // Format bar — block type select
+  $('#block-type-select').addEventListener('change', (e) => {
+    applyBlockFormat(e.target.value);
+    editor.focus();
+  });
+
+  // Font select
+  $('#btn-font-select').addEventListener('click', (e) => {
+    showPopover('font-popover', e.currentTarget);
+  });
+  $$('.font-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      applyFont(btn.dataset.font);
+      $('#font-popover').classList.add('hidden');
+      editor.focus();
+    });
+  });
+
+  // Color text
+  $('#btn-color-text').addEventListener('click', (e) => {
+    state.colorMode = 'text';
+    $('#color-popover-title').textContent = '文字颜色';
+    showPopover('color-popover', e.currentTarget);
+  });
+
+  // Color background
+  $('#btn-color-bg').addEventListener('click', (e) => {
+    state.colorMode = 'bg';
+    $('#color-popover-title').textContent = '背景颜色';
+    showPopover('color-popover', e.currentTarget);
+  });
+
+  // Custom color
+  $('#custom-color').addEventListener('input', (e) => {
+    applyColor(e.target.value, state.colorMode);
+    editor.focus();
+  });
+
+  // Dice modal
+  $('#btn-close-dice').addEventListener('click', closeDiceModal);
+  $('#btn-roll-dice').addEventListener('click', rollDiceFromModal);
+  $('#dice-formula').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') rollDiceFromModal();
+  });
+  $$('.dice-quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const formula = btn.dataset.dice;
+      try {
+        const result = rollDice(formula);
+        addDiceResult(result);
+      } catch (err) {
+        showToast('骰子错误: ' + err.message, 'error');
+      }
+    });
+  });
+
+  // Settings modal
+  $('#btn-close-settings').addEventListener('click', closeSettingsModal);
+  $('#setting-theme').addEventListener('change', (e) => {
+    state.prefs.theme = e.target.value;
+    applyPreferences(state.prefs);
     persistPreferences();
+  });
+  $('#setting-page-style').addEventListener('change', (e) => {
+    state.prefs.pageStyle = e.target.value;
+    updatePageStyle(e.target.value);
+    persistPreferences();
+  });
+  $('#setting-auto-save').addEventListener('change', (e) => {
+    state.prefs.autoSave = e.target.checked;
+    persistPreferences();
+  });
+
+  // Close modals on overlay click
+  $$('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', () => {
+      overlay.closest('.modal').classList.add('hidden');
+    });
+  });
+
+  // Prevent editor losing contenteditable on paste
+  editor.addEventListener('paste', (e) => {
+    // Allow rich paste but clean up
+    // Let the browser handle it natively
   });
 }
 
-function applyColor(color) {
-  const mode = $('#color-popover').dataset.mode;
-  const start = editor.selectionStart;
-  const end = editor.selectionEnd;
-  const selected = editor.value.substring(start, end);
+// =============================================
+//  Page Layout (A4 Pagination)
+// =============================================
+function updatePageLayout() {
+  const container = $('#page-container');
+  const overlay = $('#page-overlay');
 
-  if (!selected) {
-    showToast('请先选中文本再应用颜色', 'info');
-    return;
+  if (!container || !overlay) return;
+
+  // 1mm = 3.7795px approx
+  const mmToPx = 3.779527559;
+  const pageHeight = Math.ceil(297 * mmToPx); // ~1123px standard A4 height at 96dpi
+
+  // We need to reset height to auto temporarily to measure natural content height
+  editor.style.height = 'auto'; // Reset to measure
+  const contentHeight = editor.scrollHeight;
+  const numPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+
+  // Set height to multiple of page height
+  editor.style.height = `${numPages * pageHeight}px`;
+
+  // Avoid unnecessary DOM updates if page count hasn't changed
+  const currentPages = overlay.querySelectorAll('.page-number').length;
+  if (currentPages === numPages) return;
+
+  // Rebuild overlay
+  overlay.innerHTML = '';
+
+  for (let i = 1; i <= numPages; i++) {
+    // Page Number
+    const pageNum = document.createElement('div');
+    pageNum.className = 'page-number';
+    pageNum.textContent = `- ${i} -`;
+    pageNum.style.top = `${i * pageHeight - 30}px`; // 30px from bottom
+    overlay.appendChild(pageNum);
+
+    // Divider (between pages)
+    if (i < numPages) {
+      const divider = document.createElement('div');
+      divider.className = 'page-divider';
+      divider.dataset.page = `第 ${i + 1} 页`;
+      divider.style.top = `${i * pageHeight}px`;
+      overlay.appendChild(divider);
+    }
   }
-
-  // Wrap with HTML span
-  const prop = mode === 'bg' ? 'background' : 'color';
-  const wrapped = `<span style="${prop}:${color}">${selected}</span>`;
-  editor.value = editor.value.substring(0, start) + wrapped + editor.value.substring(end);
-  editor.dispatchEvent(new Event('input', { bubbles: true }));
 }
-
-// =============================================
-//  Utility
-// =============================================
-function escapeHTML(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-// =============================================
-//  Boot
-// =============================================
-init().catch(err => {
-  console.error('Failed to initialize:', err);
-  showToast('初始化失败，请刷新页面', 'error');
-});
