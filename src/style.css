@@ -1573,3 +1573,52 @@ body {
   color: #999;
   font-style: italic;
 }
+
+.import-preview-pane pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background: #eee;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .import-layout {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .import-sidebar {
+    width: 100%;
+    min-width: 0;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding-right: 0;
+    padding-bottom: 1rem;
+  }
+
+  .import-types {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .type-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .modal-large {
+    height: 95vh;
+    width: 95%;
+  }
+
+  .import-list {
+    width: 100%;
+    max-height: 200px;
+  }
+
+  .import-split-view {
+    flex-direction: column;
+  }
+}

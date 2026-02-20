@@ -23,7 +23,8 @@ export function initImporterUI(importer) {
         source: 'kiwee-5e', // Default
         type: 'spell',      // Default
         selectedItem: null,
-        previewHtml: ''
+        previewHtml: '',
+        lastRange: null
     };
 
     // Debounce helper
@@ -38,11 +39,18 @@ export function initImporterUI(importer) {
     // --- Actions ---
 
     function openModal() {
+        // Save current selection if inside editor
+        const selection = window.getSelection();
+        const editor = document.getElementById('editor');
+        if (selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
+            currentState.lastRange = selection.getRangeAt(0);
+        }
+
         modal.classList.remove('hidden');
         inputSearch.focus();
-        // Load initial list if empty? Or just wait for search?
-        // Maybe trigger empty search to show some results if allowed?
-        // For now wait for input.
+
+        // Trigger initial browse (empty search)
+        doSearch();
     }
 
     function closeModal() {
@@ -51,10 +59,9 @@ export function initImporterUI(importer) {
 
     async function doSearch() {
         const query = inputSearch.value.trim();
-        if (!query) {
-            listResults.innerHTML = '<div class="empty-state">请输入关键词搜索</div>';
-            return;
-        }
+
+        // Show loading state
+        listResults.innerHTML = '<div class="empty-state">Loading...</div>';
 
         listResults.innerHTML = '<div class="empty-state">搜索中...</div>';
 
