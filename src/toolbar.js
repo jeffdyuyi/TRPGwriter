@@ -135,7 +135,15 @@ export function executeToolbarAction(action, editorEl) {
  */
 export function executeFormatCommand(cmd) {
     if (cmd === 'highlight') {
-        document.execCommand('hiliteColor', false, '#ffff00');
+        const currentColor = document.queryCommandValue('hiliteColor');
+        // Check if color is present (not empty, not transparent/white)
+        // Chrome returns 'rgba(0, 0, 0, 0)' or 'transparent' for none
+        // Some browsers return hex, some rgb
+        if (currentColor && currentColor !== 'transparent' && currentColor !== 'rgba(0, 0, 0, 0)' && currentColor !== 'rgb(255, 255, 255)' && currentColor !== '#ffffff') {
+            document.execCommand('hiliteColor', false, 'transparent');
+        } else {
+            document.execCommand('hiliteColor', false, '#ffff00');
+        }
     } else {
         document.execCommand(cmd, false, null);
     }
