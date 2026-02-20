@@ -343,6 +343,7 @@
           <label class="section-label">数据源</label>
           <select id="import-source" class="setting-select mb-2">
             <option value="kiwee-5e">5e.kiwee.top (中文)</option>
+            <option value="local-csv">本地数据库 (CSV)</option>
           </select>
 
           <label class="section-label mt-2">类型</label>
@@ -369,6 +370,16 @@
             </div>
           </div>
         </div>
+      </div>
+      <div id="local-db-controls" class="hidden"
+        style="padding: 0 20px 10px; display: flex; align-items: center; gap: 10px; font-size: 0.9em;">
+        <strong>本地数据库管理:</strong>
+        <button class="btn-text" id="btn-download-tpl"
+          style="color:var(--accent); cursor:pointer; background:none; border:none; text-decoration:underline;">下载CSV模板</button>
+        <input type="file" id="file-import-csv" accept=".csv" style="display:none">
+        <button class="btn-text" id="btn-import-csv"
+          style="color:var(--accent); cursor:pointer; background:none; border:none; text-decoration:underline;">导入CSV数据</button>
+        <span id="import-csv-status" style="margin-left:auto; color:#666;"></span>
       </div>
       <div class="modal-footer">
         <span id="import-status" class="import-status"></span>

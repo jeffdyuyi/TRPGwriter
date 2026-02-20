@@ -18,6 +18,13 @@ export function initImporterUI(importer) {
     const previewPane = document.getElementById('import-preview');
     const statusSpan = document.getElementById('import-status');
 
+    // CSV Controls
+    const divLocalControls = document.getElementById('local-db-controls');
+    const btnDownloadTpl = document.getElementById('btn-download-tpl');
+    const btnImportCsv = document.getElementById('btn-import-csv');
+    const fileInputCsv = document.getElementById('file-import-csv');
+    const statusCsv = document.getElementById('import-csv-status');
+
     // State
     let currentState = {
         source: 'kiwee-5e', // Default
@@ -185,7 +192,49 @@ export function initImporterUI(importer) {
     // Source Select
     selectSource.addEventListener('change', (e) => {
         currentState.source = e.target.value;
+        // Toggle CSV controls
+        if (currentState.source === 'local-csv') {
+            divLocalControls.classList.remove('hidden');
+        } else {
+            divLocalControls.classList.add('hidden');
+        }
         doSearch();
+    });
+
+    // CSV Events
+    btnDownloadTpl.addEventListener('click', () => {
+        const plugin = importer.getPlugin('local-csv');
+        if (!plugin) return;
+        const csvContent = plugin.getTemplate(currentState.type);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${currentState.type}_template.csv`;
+        link.click();
+    });
+
+    btnImportCsv.addEventListener('click', () => fileInputCsv.click());
+
+    fileInputCsv.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        statusCsv.textContent = '读取中...';
+
+        try {
+            const text = await file.text();
+            const plugin = importer.getPlugin('local-csv');
+            if (plugin) {
+                const count = await plugin.importCSV(currentState.type, text);
+                statusCsv.textContent = `成功导入 ${count} 条数据`;
+                doSearch(); // Refresh list
+            }
+        } catch (err) {
+            console.error(err);
+            statusCsv.textContent = '导入失败: ' + err.message;
+        }
+        // Reset input
+        e.target.value = '';
     });
 
     // Type Select

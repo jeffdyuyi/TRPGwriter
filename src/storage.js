@@ -4,7 +4,7 @@
  */
 
 const DB_NAME = 'trpg-writer-db';
-const DB_VERSION = 2; // Bumped to clear old Markdown data
+const DB_VERSION = 3; // Bumped to add custom_data store
 const STORE_NAME = 'documents';
 
 let db = null;
@@ -26,6 +26,13 @@ function openDB() {
                 const store = database.createObjectStore(STORE_NAME, { keyPath: 'id' });
                 store.createIndex('updatedAt', 'updatedAt', { unique: false });
                 store.createIndex('title', 'title', { unique: false });
+            }
+            if (!database.objectStoreNames.contains('custom_data')) {
+                // Store for imported CSV data
+                const customStore = database.createObjectStore('custom_data', { keyPath: 'id', autoIncrement: true });
+                customStore.createIndex('type', 'type', { unique: false });
+                customStore.createIndex('source', 'source', { unique: false });
+                customStore.createIndex('name', 'name', { unique: false });
             }
         };
         request.onsuccess = (e) => { db = e.target.result; resolve(db); };
@@ -149,6 +156,68 @@ export async function deleteDocument(id) {
         delete docs[id];
         localStorage.setItem('trpg-docs', JSON.stringify(docs));
     }
+}
+
+// ---- Custom Data (CSV Import) ----
+
+export async function addCustomItem(item) {
+    try {
+        const database = await openDB();
+        return new Promise((resolve, reject) => {
+            const tx = database.transaction('custom_data', 'readwrite');
+            const store = tx.objectStore('custom_data');
+            // Check if exists by name+type to avoid dupes? Or just add?
+            // Simple add for now
+            store.add(item);
+            tx.oncomplete = () => resolve();
+            tx.onerror = (e) => reject(e);
+        });
+    } catch (e) {
+        console.warn('DB not ready', e);
+    }
+}
+
+export async function clearCustomItems(type) {
+    const database = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = database.transaction('custom_data', 'readwrite');
+        const store = tx.objectStore('custom_data');
+        const index = store.index('type');
+        const request = index.openCursor(IDBKeyRange.only(type));
+
+        request.onsuccess = (e) => {
+            const cursor = e.target.result;
+            if (cursor) {
+                cursor.delete();
+                cursor.continue();
+            }
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = reject;
+    });
+}
+
+export async function searchCustomItems(type, query) {
+    const database = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = database.transaction('custom_data', 'readonly');
+        const store = tx.objectStore('custom_data');
+        const index = store.index('type');
+        const request = index.getAll(IDBKeyRange.only(type));
+
+        request.onsuccess = () => {
+            const results = request.result || [];
+            if (!query) return resolve(results);
+
+            const term = query.toLowerCase();
+            const filtered = results.filter(i =>
+                (i.name && i.name.toLowerCase().includes(term)) ||
+                (i.ENG_name && i.ENG_name.toLowerCase().includes(term))
+            );
+            resolve(filtered);
+        };
+        request.onerror = reject;
+    });
 }
 
 // ---- Preferences ----
