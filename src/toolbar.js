@@ -116,9 +116,6 @@ export function executeToolbarAction(action, editorEl) {
             break;
         }
 
-        case 'code':
-            insertHTML('<pre><code>// 代码块\n</code></pre><p><br></p>');
-            break;
 
         case 'blockquote':
             document.execCommand('formatBlock', false, 'blockquote');
