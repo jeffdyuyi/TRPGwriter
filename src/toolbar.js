@@ -99,14 +99,6 @@ export function executeToolbarAction(action, editorEl) {
             break;
         }
 
-        case 'image': {
-            const url = prompt('输入图片URL:', 'https://');
-            if (url && url !== 'https://') {
-                insertHTML(`<img src="${escapeAttr(url)}" alt="图片" style="max-width:100%"><br>`);
-            }
-            break;
-        }
-
         case 'link': {
             const href = prompt('输入链接URL:', 'https://');
             if (href && href !== 'https://') {

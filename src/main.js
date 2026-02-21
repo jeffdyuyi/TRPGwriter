@@ -50,8 +50,8 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const editor = $('#editor');
 const editorScroll = $('#editor-scroll');
 const fileTabs = $('#file-tabs');
-const toolbarPanel = $('#toolbar-panel');
-const formatBar = $('#format-bar');
+const formatPanel = $('#format-panel');
+const trpgPanel = $('#trpg-panel');
 
 // =============================================
 //  Initialization
@@ -634,10 +634,11 @@ function setupEventListeners() {
 
   // Header buttons
   $('#btn-toggle-sidebar').addEventListener('click', () => {
-    toolbarPanel.classList.toggle('collapsed');
+    formatPanel.classList.toggle('collapsed');
+    trpgPanel.classList.toggle('collapsed');
     // V4: update sidebar toggle icon
     const icon = $('#btn-toggle-sidebar').querySelector('.material-symbols-rounded');
-    icon.textContent = toolbarPanel.classList.contains('collapsed') ? 'menu_open' : 'menu';
+    icon.textContent = formatPanel.classList.contains('collapsed') ? 'menu_open' : 'menu';
   });
   $('#btn-new-file').addEventListener('click', () => createNewFile());
   $('#btn-dice').addEventListener('click', openDiceModal);
@@ -659,18 +660,24 @@ function setupEventListeners() {
     });
   }
 
-  // Left toolbar actions (TRPG elements)
-  toolbarPanel.addEventListener('click', (e) => {
+  // Sidebar actions (TRPG & Layout elements)
+  const handleToolbarClick = (e) => {
     const btn = e.target.closest('.toolbar-btn');
     if (!btn) return;
     const action = btn.dataset.action;
     if (action) {
-      executeToolbarAction(action, editor);
+      if (action === 'image') {
+        $('#image-modal').classList.remove('hidden');
+      } else {
+        executeToolbarAction(action, editor);
+      }
     }
-  });
+  };
+  formatPanel.addEventListener('click', handleToolbarClick);
+  trpgPanel.addEventListener('click', handleToolbarClick);
 
-  // Format bar — command buttons
-  formatBar.addEventListener('click', (e) => {
+  // Format sidebar — command buttons
+  formatPanel.addEventListener('click', (e) => {
     const btn = e.target.closest('.format-btn[data-cmd]');
     if (btn) {
       e.preventDefault();
@@ -758,6 +765,41 @@ function setupEventListeners() {
     if (e.key === 'Escape') {
       $$('.modal:not(.hidden)').forEach(m => m.classList.add('hidden'));
       $$('.popover:not(.hidden)').forEach(p => p.classList.add('hidden'));
+    }
+  });
+
+  // Image modal logic
+  $('#btn-close-image').addEventListener('click', () => {
+    $('#image-modal').classList.add('hidden');
+  });
+
+  $('#btn-image-local').addEventListener('click', () => {
+    $('#input-image-local').click();
+  });
+
+  $('#input-image-local').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        editor.focus();
+        document.execCommand('insertHTML', false, `<img src="${event.target.result}" alt="图片" style="max-width:100%"><br>`);
+        updatePageLayout();
+        $('#image-modal').classList.add('hidden');
+        $('#input-image-local').value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  $('#btn-image-url').addEventListener('click', () => {
+    const url = $('#input-image-url').value.trim();
+    if (url) {
+      editor.focus();
+      document.execCommand('insertHTML', false, `<img src="${url.replace(/"/g, '&quot;')}" alt="图片" style="max-width:100%"><br>`);
+      updatePageLayout();
+      $('#image-modal').classList.add('hidden');
+      $('#input-image-url').value = '';
     }
   });
 

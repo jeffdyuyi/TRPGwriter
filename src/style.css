@@ -308,6 +308,19 @@ body {
   text-align: center;
 }
 
+.toolbar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.right-panel {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
 /* ---- Editor Wrapper ---- */
 .editor-wrapper {
   flex: 1;
@@ -335,38 +348,6 @@ body {
 .status-divider {
   color: var(--border-light);
   font-size: 10px;
-}
-
-/* ---- Format Bar ---- */
-.format-bar {
-  display: flex;
-  align-items: center;
-  height: var(--format-bar-height);
-  padding: 0 8px;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  gap: 2px;
-  flex-shrink: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.format-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.format-group {
-  display: flex;
-  align-items: center;
-  gap: 1px;
-}
-
-.format-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--border-light);
-  margin: 0 4px;
-  flex-shrink: 0;
 }
 
 .format-select {
