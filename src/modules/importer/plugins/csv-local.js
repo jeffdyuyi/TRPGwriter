@@ -1,5 +1,5 @@
 
-import { addCustomItem, searchCustomItems, clearCustomItems } from '../../storage.js';
+import { addCustomItem, searchCustomItems, clearCustomItems } from '../../../storage.js';
 import { CommonRenderer } from '../renderer.js';
 
 export class CsvLocalPlugin {

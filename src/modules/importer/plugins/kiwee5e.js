@@ -67,7 +67,7 @@ export class Kiwee5ePlugin {
 
         let results = this.searchIndex.filter(item => {
             if (type === 'monster' && item.c !== 1) return false;
-            if (type === 'spell' && (item.c !== 3 && item.c !== 2)) return false;
+            if (type === 'spell' && item.c !== 3) return false; // B10: 仅允许法术类别
             if (type === 'item' && (item.c === 1 || item.c === 3)) return false;
 
             if (isBrowse) return true;

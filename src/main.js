@@ -104,10 +104,8 @@ function applyPreferences(prefs) {
 
 function updatePageStyle(style) {
   const wrapper = $('#editor-wrapper');
-  wrapper.classList.remove('page-parchment', 'page-modern', 'page-dark-fantasy');
-  if (style !== 'parchment') {
-    wrapper.classList.add(`page-${style}`);
-  }
+  ['page-parchment', 'page-modern', 'page-dark-fantasy'].forEach(c => wrapper.classList.remove(c));
+  wrapper.classList.add(`page-${style}`);
 }
 
 function persistPreferences() {
@@ -134,6 +132,19 @@ function renderFileTabs() {
         switchToFile(i);
       }
     });
+    // E2: 双击标签重命名
+    const nameSpan = tab.querySelector('.tab-name');
+    nameSpan.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      const currentTitle = file.doc.title || '未命名';
+      const newTitle = prompt('重命名文档:', currentTitle);
+      if (newTitle !== null && newTitle.trim()) {
+        file.doc.title = newTitle.trim();
+        file.unsaved = true;
+        renderFileTabs();
+        scheduleAutoSave();
+      }
+    });
     fileTabs.appendChild(tab);
   });
 }
@@ -148,7 +159,6 @@ function switchToFile(index) {
 
 function loadActiveFile() {
   const file = state.openFiles[state.activeFileIndex];
-  if (!file) return;
   if (!file) return;
   editor.innerHTML = file.doc.content || '';
   // Update layout after loading content
@@ -179,8 +189,11 @@ async function closeFile(index) {
     await createNewFile();
     return;
   }
-  if (state.activeFileIndex >= state.openFiles.length) {
-    state.activeFileIndex = state.openFiles.length - 1;
+  // B8: 正确调整激活索引
+  if (index < state.activeFileIndex) {
+    state.activeFileIndex--;
+  } else if (index === state.activeFileIndex) {
+    state.activeFileIndex = Math.min(state.activeFileIndex, state.openFiles.length - 1);
   }
   loadActiveFile();
   renderFileTabs();
@@ -386,10 +399,11 @@ function addDiceResult(result) {
 
   const entry = document.createElement('div');
   entry.className = 'dice-result-entry';
+  // B7: 使用 result.details 统一显示骰子详情
   entry.innerHTML = `
     <div>
       <div class="dice-result-formula">${result.formula}</div>
-      <div class="dice-result-detail">[${result.rolls.join(', ')}]${result.modifier ? ' + ' + result.modifier : ''}</div>
+      <div class="dice-result-detail">${result.details || ''}</div>
     </div>
     <div class="dice-result-value">${result.total}</div>
   `;
@@ -467,6 +481,8 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 300);
   }, 2500);
 }
+// E3: 暴露 showToast 供导入模块使用
+window.__showToast = showToast;
 
 // =============================================
 //  Export
@@ -705,10 +721,19 @@ function setupEventListeners() {
     });
   });
 
-  // Prevent editor losing contenteditable on paste
+  // E4: Esc键关闭所有弹出模态框和弹出窗口
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      $$('.modal:not(.hidden)').forEach(m => m.classList.add('hidden'));
+      $$('.popover:not(.hidden)').forEach(p => p.classList.add('hidden'));
+    }
+  });
+
+  // B6: 粘贴时清除外部富文本样式，仅粘贴纯文本
   editor.addEventListener('paste', (e) => {
-    // Allow rich paste but clean up
-    // Let the browser handle it natively
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
   });
 }
 

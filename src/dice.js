@@ -19,12 +19,12 @@ function rollDie(sides) {
  */
 export function rollDice(formula) {
   formula = formula.trim().toLowerCase();
-  
+
   // Match pattern: (count)d(sides)(kh/kl N)(+/- modifier)
   const match = formula.match(
     /^(\d+)?d(\d+)(?:(kh|kl)(\d+))?(?:\s*([+\-])\s*(\d+))?$/
   );
-  
+
   if (!match) {
     // Try evaluating as pure number/expression
     const num = parseInt(formula);
@@ -40,7 +40,7 @@ export function rollDice(formula) {
     }
     throw new Error(`无法解析骰子公式: ${formula}`);
   }
-  
+
   const count = parseInt(match[1] || '1');
   const sides = parseInt(match[2]);
   const keepMode = match[3]; // 'kh' or 'kl' or undefined
@@ -48,16 +48,16 @@ export function rollDice(formula) {
   const modSign = match[5]; // '+' or '-' or undefined
   const modValue = match[6] ? parseInt(match[6]) : 0;
   const modifier = modSign === '-' ? -modValue : modValue;
-  
+
   if (count > 100) throw new Error('骰子数量不能超过100');
   if (sides > 1000) throw new Error('骰面不能超过1000');
-  
+
   // Roll all dice
   const rolls = [];
   for (let i = 0; i < count; i++) {
     rolls.push(rollDie(sides));
   }
-  
+
   // Sort for keep highest / keep lowest
   let kept = [...rolls];
   if (keepMode) {
@@ -70,25 +70,31 @@ export function rollDice(formula) {
     const keptIndices = new Set(sorted.slice(0, keepCount).map(x => x.i));
     kept = rolls.filter((_, i) => keptIndices.has(i));
   }
-  
+
   const subtotal = kept.reduce((sum, v) => sum + v, 0);
   const total = subtotal + modifier;
-  
-  // Build details string
+
+  // Build details string (B3: use index set for correct drop marking)
+  const keptIndexSet = keepMode ? new Set(
+    [...rolls].map((v, i) => ({ v, i }))
+      .sort((a, b) => keepMode === 'kh' ? b.v - a.v : a.v - b.v)
+      .slice(0, keepCount)
+      .map(x => x.i)
+  ) : null;
   let details = `[${rolls.map((r, i) => {
-    if (keepMode && !kept.includes(r)) {
+    if (keepMode && !keptIndexSet.has(i)) {
       return `~~${r}~~`;
     }
     return r;
   }).join(', ')}]`;
-  
+
   if (keepMode) {
     details += ` ${keepMode}${keepCount}`;
   }
   if (modifier !== 0) {
     details += ` ${modifier > 0 ? '+' : ''}${modifier}`;
   }
-  
+
   return {
     formula: formula.toUpperCase(),
     rolls,
@@ -107,17 +113,17 @@ export function rollDice(formula) {
  */
 export function evaluateDiceExpression(expression) {
   expression = expression.trim().toLowerCase();
-  
+
   // If it's a simple formula, use rollDice directly
   if (/^(\d+)?d(\d+)(?:(kh|kl)(\d+))?(?:\s*[+\-]\s*\d+)?$/.test(expression)) {
     return rollDice(expression);
   }
-  
+
   // Split by + and - while keeping the operators
   const parts = expression.split(/(?=[+\-])/);
   let total = 0;
   const details = [];
-  
+
   for (const part of parts) {
     const trimmed = part.trim();
     if (/d/.test(trimmed)) {
@@ -138,7 +144,7 @@ export function evaluateDiceExpression(expression) {
       }
     }
   }
-  
+
   return {
     formula: expression.toUpperCase(),
     total,

@@ -68,8 +68,6 @@ export function initImporterUI(importer) {
         const query = inputSearch.value.trim();
 
         // Show loading state
-        listResults.innerHTML = '<div class="empty-state">Loading...</div>';
-
         listResults.innerHTML = '<div class="empty-state">搜索中...</div>';
 
         try {
@@ -77,7 +75,10 @@ export function initImporterUI(importer) {
             renderResults(results);
         } catch (e) {
             console.error(e);
-            listResults.innerHTML = `<div class="empty-state error">搜索失败: ${e.message}</div>`;
+            // E1: 网络错误/加载失败友好提示
+            const isNetwork = e.message.includes('fetch') || e.message.includes('network') || e.name === 'TypeError';
+            const hint = isNetwork ? '请检查网络连接后重试' : e.message;
+            listResults.innerHTML = `<div class="empty-state error">搜索失败: ${hint}</div>`;
         }
     }
 
@@ -176,9 +177,8 @@ export function initImporterUI(importer) {
         // Trigger auto-save or input event
         editor.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // Toast
-        // (Assuming renderToast or similar exists, if not just alert or console)
-        console.log('Imported successfully');
+        // E3: Toast通知
+        if (window.__showToast) window.__showToast('已成功插入到编辑器', 'success');
     }
 
     // --- Events ---
