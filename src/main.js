@@ -100,12 +100,21 @@ function applyPreferences(prefs) {
 
   // Page style
   updatePageStyle(prefs.pageStyle || 'parchment');
+
+  // Heading style
+  updateHeadingStyle(prefs.headingStyle || 'classic');
 }
 
 function updatePageStyle(style) {
   const wrapper = $('#editor-wrapper');
   ['page-parchment', 'page-modern', 'page-dark-fantasy'].forEach(c => wrapper.classList.remove(c));
   wrapper.classList.add(`page-${style}`);
+}
+
+function updateHeadingStyle(style) {
+  const wrapper = $('#editor-wrapper');
+  ['heading-classic', 'heading-modern', 'heading-gothic'].forEach(c => wrapper.classList.remove(c));
+  wrapper.classList.add(`heading-${style}`);
 }
 
 function persistPreferences() {
@@ -438,6 +447,7 @@ function openSettingsModal() {
   const modal = $('#settings-modal');
   $('#setting-theme').value = state.prefs.theme || 'light';
   $('#setting-page-style').value = state.prefs.pageStyle || 'parchment';
+  $('#setting-heading-style').value = state.prefs.headingStyle || 'classic';
   $('#setting-auto-save').checked = state.prefs.autoSave !== false;
   modal.classList.remove('hidden');
 }
@@ -746,6 +756,11 @@ function setupEventListeners() {
   $('#setting-page-style').addEventListener('change', (e) => {
     state.prefs.pageStyle = e.target.value;
     updatePageStyle(e.target.value);
+    persistPreferences();
+  });
+  $('#setting-heading-style').addEventListener('change', (e) => {
+    state.prefs.headingStyle = e.target.value;
+    updateHeadingStyle(e.target.value);
     persistPreferences();
   });
   $('#setting-auto-save').addEventListener('change', (e) => {

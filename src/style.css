@@ -913,6 +913,50 @@ body {
   color: #999;
 }
 
+/* ---- Heading style variants ---- */
+.heading-modern .wysiwyg-editor h1,
+.heading-modern .wysiwyg-editor h2,
+.heading-modern .wysiwyg-editor h3,
+.heading-modern .wysiwyg-editor h4 {
+  font-family: 'Noto Sans SC', sans-serif;
+  color: #2c3e50;
+  border-bottom-color: #3498db;
+}
+
+.heading-modern .wysiwyg-editor h1 {
+  border-bottom-width: 2px;
+}
+
+.heading-modern .wysiwyg-editor h2 {
+  border-bottom-width: 1px;
+}
+
+.heading-modern .wysiwyg-editor h3 {
+  border-bottom: none;
+}
+
+.heading-gothic .wysiwyg-editor h1,
+.heading-gothic .wysiwyg-editor h2,
+.heading-gothic .wysiwyg-editor h3,
+.heading-gothic .wysiwyg-editor h4 {
+  font-family: 'Noto Serif SC', serif;
+  color: #111;
+  text-align: center;
+  border-bottom: none;
+}
+
+.heading-gothic .wysiwyg-editor h1 {
+  border-bottom: 1px solid #111;
+  border-top: 1px solid #111;
+  padding: 8px 0;
+  margin-top: 1em;
+}
+
+.heading-gothic .wysiwyg-editor h2 {
+  font-style: italic;
+  font-weight: 500;
+}
+
 /* ---- Page style variants ---- */
 .page-modern .wysiwyg-editor {
   background: #ffffff;
