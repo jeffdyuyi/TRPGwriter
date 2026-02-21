@@ -566,11 +566,18 @@ td { padding: 5px 10px; border-bottom: 1px solid #c9ad6a; }
 .page-break { page-break-after: always; break-after: page; border: none; height: 0; margin: 0; }
 hr { border: none; border-top: 2px solid #c9ad6a; margin: 1em 0; }
 img { max-width: 100%; }
+.page-container { position: relative; width: 210mm; z-index: 1; }
+.page-underlay { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.page-bg-card { position: absolute; left: 0; width: 100%; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.wysiwyg-editor { position: relative; width: 100%; outline: none; background: transparent; }
 @media print {
+  body { margin: 0; padding: 0; max-width: none; }
+  .page-container { margin: 0; box-shadow: none; }
   .page-break { page-break-after: always; }
+  .page-overlay { display: none; }
 }
 </style>
-</head><body>${editor.innerHTML}</body></html>`);
+</head><body><div style="width:210mm; margin:0 auto; position:relative;">${$('#page-underlay').outerHTML}${editor.outerHTML}</div></body></html>`);
   printWin.document.close();
   setTimeout(() => { printWin.print(); }, 500);
 }
