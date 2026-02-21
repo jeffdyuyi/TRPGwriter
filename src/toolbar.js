@@ -211,6 +211,18 @@ export function setupKeyboardShortcuts(editorEl) {
                     e.preventDefault();
                     document.execCommand('underline', false, null);
                     break;
+                case 'z':
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        document.execCommand('redo', false, null);
+                    } else {
+                        document.execCommand('undo', false, null);
+                    }
+                    break;
+                case 'y':
+                    e.preventDefault();
+                    document.execCommand('redo', false, null);
+                    break;
             }
         }
     });

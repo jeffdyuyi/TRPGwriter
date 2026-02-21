@@ -96,7 +96,7 @@ init();
 // =============================================
 function applyPreferences(prefs) {
   // Theme
-  document.documentElement.setAttribute('data-theme', prefs.theme || 'dark');
+  document.documentElement.setAttribute('data-theme', prefs.theme || 'light');
 
   // Page style
   updatePageStyle(prefs.pageStyle || 'parchment');
@@ -436,7 +436,7 @@ function addDiceResult(result) {
 // =============================================
 function openSettingsModal() {
   const modal = $('#settings-modal');
-  $('#setting-theme').value = state.prefs.theme || 'dark';
+  $('#setting-theme').value = state.prefs.theme || 'light';
   $('#setting-page-style').value = state.prefs.pageStyle || 'parchment';
   $('#setting-auto-save').checked = state.prefs.autoSave !== false;
   modal.classList.remove('hidden');
@@ -542,8 +542,8 @@ td { padding: 5px 10px; border-bottom: 1px solid #c9ad6a; }
 .trpg-note::before { content: '📜 提示'; display: block; font-weight: 700; color: #7c6420; margin-bottom: 4px; font-size: 0.85em; }
 .trpg-warning { background: #fdf0e8; border-left: 4px solid #e74c3c; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
 .trpg-warning::before { content: '⚠️ 警告'; display: block; font-weight: 700; color: #c0392b; margin-bottom: 4px; font-size: 0.85em; }
-.trpg-stat-block { background: linear-gradient(180deg, #fdf6e3, #f5e6c8); border: 2px solid #58180d; padding: 16px 20px; margin: 16px 0; font-size: 0.92em; }
-.trpg-stat-block::before, .trpg-stat-block::after { content: ''; display: block; height: 6px; background: linear-gradient(90deg, #58180d 0%, #c9ad6a 45%, #c9ad6a 55%, #58180d 100%); margin: 4px -20px 8px; }
+.trpg-stat-block { background: #fdf6e3; border: 2px solid #58180d; padding: 16px 20px; margin: 16px 0; font-size: 0.92em; }
+.trpg-stat-block::before, .trpg-stat-block::after { content: ''; display: block; height: 6px; background: #58180d; margin: 4px -20px 8px; }
 .trpg-stat-block::after { margin: 8px -20px 4px; }
 .trpg-stat-block h3 { color: #58180d; font-size: 1.4em; border: none; }
 .trpg-stat-block table th { background: transparent; color: #58180d; text-align: center; border-bottom: 2px solid #58180d; }
@@ -644,6 +644,20 @@ function setupEventListeners() {
   $('#btn-export-pdf').addEventListener('click', handleExportPDF);
   $('#btn-export-html').addEventListener('click', handleExportHTML);
   $('#btn-settings').addEventListener('click', openSettingsModal);
+
+  // About modal integration
+  const logoAbout = $('#logo-about');
+  if (logoAbout) {
+    logoAbout.addEventListener('click', () => {
+      $('#about-modal').classList.remove('hidden');
+    });
+  }
+  const btnCloseAbout = $('#btn-close-about');
+  if (btnCloseAbout) {
+    btnCloseAbout.addEventListener('click', () => {
+      $('#about-modal').classList.add('hidden');
+    });
+  }
 
   // Left toolbar actions (TRPG elements)
   toolbarPanel.addEventListener('click', (e) => {
@@ -752,6 +766,77 @@ function setupEventListeners() {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
+  });
+
+  // Floating Delete Button Logic
+  initFloatingDeleteBtn();
+}
+
+function initFloatingDeleteBtn() {
+  const moduleDelBtn = document.createElement('button');
+  moduleDelBtn.className = 'icon-btn';
+  moduleDelBtn.innerHTML = '<span class="material-symbols-rounded">delete</span>';
+  Object.assign(moduleDelBtn.style, {
+    position: 'absolute',
+    display: 'none',
+    background: 'var(--accent)',
+    color: '#fff',
+    zIndex: '150',
+    borderRadius: '50%',
+    width: '28px',
+    height: '28px'
+  });
+  moduleDelBtn.title = '删除此模块';
+  moduleDelBtn.contentEditable = 'false';
+
+  const container = $('#page-container');
+  if (container) {
+    container.appendChild(moduleDelBtn);
+  }
+
+  let currentHoverModule = null;
+
+  editor.addEventListener('mousemove', (e) => {
+    const mod = e.target.closest('.trpg-note, .trpg-warning, .trpg-stat-block, .trpg-spell-card, .trpg-item-card');
+    if (mod) {
+      if (currentHoverModule !== mod) {
+        currentHoverModule = mod;
+        updateDeleteBtnPos();
+      }
+    } else {
+      if (e.target.closest && e.target.closest('.icon-btn') === moduleDelBtn) return;
+      moduleDelBtn.style.display = 'none';
+      currentHoverModule = null;
+    }
+  });
+
+  function updateDeleteBtnPos() {
+    if (!currentHoverModule) return;
+    const mod = currentHoverModule;
+    const modRect = mod.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    moduleDelBtn.style.display = 'flex';
+    moduleDelBtn.style.top = (modRect.top - containerRect.top - 10) + 'px';
+    moduleDelBtn.style.left = (modRect.right - containerRect.left - 20) + 'px';
+  }
+
+  if (container) {
+    container.addEventListener('mouseleave', () => {
+      moduleDelBtn.style.display = 'none';
+      currentHoverModule = null;
+    });
+  }
+
+  moduleDelBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentHoverModule) {
+      if (confirm('确定要整块删除这个模块吗？')) {
+        currentHoverModule.remove();
+        moduleDelBtn.style.display = 'none';
+        editor.dispatchEvent(new Event('input'));
+      }
+    }
   });
 }
 

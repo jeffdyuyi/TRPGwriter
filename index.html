@@ -25,7 +25,7 @@
         <button class="icon-btn sidebar-toggle" id="btn-toggle-sidebar" title="切换侧栏">
           <span class="material-symbols-rounded">menu</span>
         </button>
-        <div class="logo">
+        <div class="logo" id="logo-about" style="cursor: pointer;" title="关于作者">
           <span class="logo-icon">📜</span>
           <span class="logo-text">TRPG写作工坊</span>
         </div>
@@ -56,87 +56,12 @@
 
     <!-- Main Content -->
     <main id="app-main">
-      <!-- Left Toolbar (TRPG Elements) -->
-      <aside id="toolbar-panel" class="toolbar-panel">
+      <!-- Left Sidebar (Format Tools & Layout) -->
+      <aside id="format-panel" class="toolbar-panel">
         <div class="toolbar-section">
-          <div class="toolbar-section-title">TRPG元素</div>
-          <button class="toolbar-btn" data-action="note" title="提示框">
-            <span class="material-symbols-rounded">sticky_note_2</span>
-            <span class="toolbar-label">提示框</span>
-          </button>
-          <button class="toolbar-btn" data-action="warning" title="警告框">
-            <span class="material-symbols-rounded">warning</span>
-            <span class="toolbar-label">警告框</span>
-          </button>
-          <button class="toolbar-btn" data-action="stat-block" title="怪物属性块">
-            <span class="material-symbols-rounded">pets</span>
-            <span class="toolbar-label">属性块</span>
-          </button>
-          <button class="toolbar-btn" data-action="spell" title="法术卡片">
-            <span class="material-symbols-rounded">auto_fix_high</span>
-            <span class="toolbar-label">法术卡</span>
-          </button>
-          <button class="toolbar-btn" data-action="item" title="物品卡片">
-            <span class="material-symbols-rounded">shield</span>
-            <span class="toolbar-label">物品卡</span>
-          </button>
-          <button class="toolbar-btn" data-action="dice-inline" title="行内骰子">
-            <span class="material-symbols-rounded">casino</span>
-            <span class="toolbar-label">骰子</span>
-          </button>
-        </div>
-
-        <div class="toolbar-section">
-          <div class="toolbar-section-title">页面布局</div>
-          <button class="toolbar-btn" data-action="toggle-columns" title="切换双栏排版">
-            <span class="material-symbols-rounded">view_week</span>
-            <span class="toolbar-label">双栏模式</span>
-          </button>
-          <button class="toolbar-btn" data-action="column-break" title="插入分栏符 (强制换栏)">
-            <span class="material-symbols-rounded">view_column</span>
-            <span class="toolbar-label">插入分栏</span>
-          </button>
-          <button class="toolbar-btn" data-action="page-break" title="插入分页符">
-            <span class="material-symbols-rounded">insert_page_break</span>
-            <span class="toolbar-label">插入分页</span>
-          </button>
-          <button class="toolbar-btn" data-action="hr" title="分隔线">
-            <span class="material-symbols-rounded">horizontal_rule</span>
-            <span class="toolbar-label">分隔线</span>
-          </button>
-        </div>
-
-        <div class="toolbar-section">
-          <div class="toolbar-section-title">插入元素</div>
-          <button class="toolbar-btn" data-action="table" title="插入表格">
-            <span class="material-symbols-rounded">table</span>
-            <span class="toolbar-label">表格</span>
-          </button>
-          <button class="toolbar-btn" data-action="image" title="插入图片">
-            <span class="material-symbols-rounded">image</span>
-            <span class="toolbar-label">图片</span>
-          </button>
-          <button class="toolbar-btn" data-action="link" title="插入链接">
-            <span class="material-symbols-rounded">link</span>
-            <span class="toolbar-label">链接</span>
-          </button>
-          <button class="toolbar-btn" id="btn-import" title="外部数据导入 (5e.kiwee/CSV)">
-            <span class="material-symbols-rounded">cloud_download</span>
-            <span class="toolbar-label">外部导入</span>
-          </button>
-          <button class="toolbar-btn" data-action="blockquote" title="引用块">
-            <span class="material-symbols-rounded">format_quote</span>
-            <span class="toolbar-label">引用</span>
-          </button>
-        </div>
-      </aside>
-
-      <!-- WYSIWYG Editor Area -->
-      <div id="editor-wrapper" class="editor-wrapper">
-        <!-- Format Bar (inline toolbar) -->
-        <div id="format-bar" class="format-bar">
-          <div class="format-group">
-            <select id="block-type-select" class="format-select" title="段落格式">
+          <div class="toolbar-section-title">文本样式</div>
+          <div style="text-align:center; margin-bottom: 6px;">
+            <select id="block-type-select" class="format-select" title="段落格式" style="width: 80px;">
               <option value="p">正文</option>
               <option value="h1">标题 1</option>
               <option value="h2">标题 2</option>
@@ -144,62 +69,83 @@
               <option value="h4">标题 4</option>
             </select>
           </div>
-          <div class="format-divider"></div>
-          <div class="format-group">
-            <button class="format-btn" data-cmd="bold" title="粗体 (Ctrl+B)">
-              <span class="material-symbols-rounded">format_bold</span>
-            </button>
-            <button class="format-btn" data-cmd="italic" title="斜体 (Ctrl+I)">
-              <span class="material-symbols-rounded">format_italic</span>
-            </button>
-            <button class="format-btn" data-cmd="underline" title="下划线 (Ctrl+U)">
-              <span class="material-symbols-rounded">format_underlined</span>
-            </button>
-            <button class="format-btn" data-cmd="strikeThrough" title="删除线">
-              <span class="material-symbols-rounded">strikethrough_s</span>
-            </button>
-          </div>
-          <div class="format-divider"></div>
-          <div class="format-group">
-            <button class="format-btn" data-cmd="insertUnorderedList" title="无序列表">
-              <span class="material-symbols-rounded">format_list_bulleted</span>
-            </button>
-            <button class="format-btn" data-cmd="insertOrderedList" title="有序列表">
-              <span class="material-symbols-rounded">format_list_numbered</span>
-            </button>
-          </div>
-          <div class="format-divider"></div>
-          <div class="format-group">
-            <button class="format-btn" data-cmd="justifyLeft" title="左对齐">
-              <span class="material-symbols-rounded">format_align_left</span>
-            </button>
-            <button class="format-btn" data-cmd="justifyCenter" title="居中对齐">
-              <span class="material-symbols-rounded">format_align_center</span>
-            </button>
-            <button class="format-btn" data-cmd="justifyRight" title="右对齐">
-              <span class="material-symbols-rounded">format_align_right</span>
-            </button>
-          </div>
-          <div class="format-divider"></div>
-          <div class="format-group">
-            <button class="format-btn" id="btn-font-select" title="选择字体">
-              <span class="material-symbols-rounded">font_download</span>
-            </button>
-            <button class="format-btn" id="btn-color-text" title="文字颜色">
-              <span class="material-symbols-rounded">format_color_text</span>
-            </button>
-          </div>
-          <div class="format-divider"></div>
-          <div class="format-group">
-            <button class="format-btn" data-cmd="undo" title="撤销 (Ctrl+Z)">
-              <span class="material-symbols-rounded">undo</span>
-            </button>
-            <button class="format-btn" data-cmd="redo" title="重做 (Ctrl+Y)">
-              <span class="material-symbols-rounded">redo</span>
-            </button>
+          <div class="toolbar-grid">
+            <button class="format-btn" data-cmd="bold" title="粗体 (Ctrl+B)"><span
+                class="material-symbols-rounded">format_bold</span></button>
+            <button class="format-btn" data-cmd="italic" title="斜体 (Ctrl+I)"><span
+                class="material-symbols-rounded">format_italic</span></button>
+            <button class="format-btn" data-cmd="underline" title="下划线 (Ctrl+U)"><span
+                class="material-symbols-rounded">format_underlined</span></button>
+            <button class="format-btn" data-cmd="strikeThrough" title="删除线"><span
+                class="material-symbols-rounded">strikethrough_s</span></button>
           </div>
         </div>
 
+        <div class="toolbar-section">
+          <div class="toolbar-section-title">段落对齐</div>
+          <div class="toolbar-grid">
+            <button class="format-btn" data-cmd="insertUnorderedList" title="无序列表"><span
+                class="material-symbols-rounded">format_list_bulleted</span></button>
+            <button class="format-btn" data-cmd="insertOrderedList" title="有序列表"><span
+                class="material-symbols-rounded">format_list_numbered</span></button>
+            <button class="format-btn" data-cmd="justifyLeft" title="左对齐"><span
+                class="material-symbols-rounded">format_align_left</span></button>
+            <button class="format-btn" data-cmd="justifyCenter" title="居中对齐"><span
+                class="material-symbols-rounded">format_align_center</span></button>
+            <button class="format-btn" data-cmd="justifyRight" title="右对齐"><span
+                class="material-symbols-rounded">format_align_right</span></button>
+          </div>
+        </div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-section-title">高级格式</div>
+          <div class="toolbar-grid">
+            <button class="format-btn" id="btn-font-select" title="选择字体"><span
+                class="material-symbols-rounded">font_download</span></button>
+            <button class="format-btn" id="btn-color-text" title="文字颜色"><span
+                class="material-symbols-rounded">format_color_text</span></button>
+            <button class="format-btn" data-cmd="undo" title="撤销 (Ctrl+Z)"><span
+                class="material-symbols-rounded">undo</span></button>
+            <button class="format-btn" data-cmd="redo" title="重做 (Ctrl+Y)"><span
+                class="material-symbols-rounded">redo</span></button>
+          </div>
+        </div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-section-title">页面布局</div>
+          <button class="toolbar-btn" data-action="toggle-columns" title="切换双栏排版">
+            <span class="material-symbols-rounded">view_week</span><span class="toolbar-label">双栏模式</span>
+          </button>
+          <button class="toolbar-btn" data-action="column-break" title="插入分栏符 (强制换栏)">
+            <span class="material-symbols-rounded">view_column</span><span class="toolbar-label">插入分栏</span>
+          </button>
+          <button class="toolbar-btn" data-action="page-break" title="插入分页符">
+            <span class="material-symbols-rounded">insert_page_break</span><span class="toolbar-label">插入分页</span>
+          </button>
+          <button class="toolbar-btn" data-action="hr" title="分隔线">
+            <span class="material-symbols-rounded">horizontal_rule</span><span class="toolbar-label">分隔线</span>
+          </button>
+        </div>
+
+        <div class="toolbar-section">
+          <div class="toolbar-section-title">插入元素</div>
+          <button class="toolbar-btn" data-action="table" title="插入表格">
+            <span class="material-symbols-rounded">table</span><span class="toolbar-label">表格</span>
+          </button>
+          <button class="toolbar-btn" data-action="image" title="插入图片">
+            <span class="material-symbols-rounded">image</span><span class="toolbar-label">图片</span>
+          </button>
+          <button class="toolbar-btn" data-action="link" title="插入链接">
+            <span class="material-symbols-rounded">link</span><span class="toolbar-label">链接</span>
+          </button>
+          <button class="toolbar-btn" data-action="blockquote" title="引用块">
+            <span class="material-symbols-rounded">format_quote</span><span class="toolbar-label">引用</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- WYSIWYG Editor Area -->
+      <div id="editor-wrapper" class="editor-wrapper">
         <!-- Editable Content Area (WYSIWYG) -->
         <div id="editor-scroll" class="editor-scroll">
           <div id="page-container" class="page-container">
@@ -220,6 +166,31 @@
           <span id="stat-pages">页数: 1</span>
         </div>
       </div>
+
+      <!-- Right Toolbar (TRPG Elements) -->
+      <aside id="trpg-panel" class="toolbar-panel right-panel">
+        <div class="toolbar-section">
+          <div class="toolbar-section-title">TRPG模块</div>
+          <button class="toolbar-btn" data-action="note" title="提示框"><span
+              class="material-symbols-rounded">sticky_note_2</span><span class="toolbar-label">提示框</span></button>
+          <button class="toolbar-btn" data-action="warning" title="警告框"><span
+              class="material-symbols-rounded">warning</span><span class="toolbar-label">警告框</span></button>
+          <button class="toolbar-btn" data-action="stat-block" title="怪物属性块"><span
+              class="material-symbols-rounded">pets</span><span class="toolbar-label">属性块</span></button>
+          <button class="toolbar-btn" data-action="spell" title="法术卡片"><span
+              class="material-symbols-rounded">auto_fix_high</span><span class="toolbar-label">法术卡</span></button>
+          <button class="toolbar-btn" data-action="item" title="物品卡片"><span
+              class="material-symbols-rounded">shield</span><span class="toolbar-label">物品卡</span></button>
+          <button class="toolbar-btn" data-action="dice-inline" title="行内骰子"><span
+              class="material-symbols-rounded">casino</span><span class="toolbar-label">骰子</span></button>
+        </div>
+        <div class="toolbar-section">
+          <div class="toolbar-section-title">外部数据</div>
+          <button class="toolbar-btn" id="btn-import" title="外部数据导入 (5e.kiwee/CSV)">
+            <span class="material-symbols-rounded">cloud_download</span><span class="toolbar-label">外部导入</span>
+          </button>
+        </div>
+      </aside>
     </main>
   </div>
 
@@ -271,8 +242,8 @@
           <label class="setting-label">主题</label>
           <div class="setting-control">
             <select id="setting-theme" class="setting-select">
-              <option value="dark">暗色主题</option>
               <option value="light">亮色主题</option>
+              <option value="dark">暗色主题</option>
             </select>
           </div>
         </div>
@@ -295,11 +266,59 @@
             </label>
           </div>
         </div>
-        <div class="setting-about">
+        <div class="setting-about" style="display: none;">
           <div class="about-title">关于</div>
           <div class="about-info">作者：不咕鸟（基德）</div>
           <div class="about-info">辅助：Antigravity Gemini</div>
           <div class="about-info">不咕鸟TRPG创想俱乐部：261751459</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Upload Modal -->
+  <div id="image-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content" style="max-width: 400px; padding-bottom: 30px;">
+      <div class="modal-header">
+        <h3>🖼️ 插入图片</h3>
+        <button class="icon-btn modal-close" id="btn-close-image">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div class="setting-group" style="display:block;">
+          <button class="btn-primary" id="btn-image-local"
+            style="width:100%; margin-bottom:15px; padding: 12px 0;">上传本地图片</button>
+          <input type="file" id="input-image-local" accept="image/*" style="display:none;" />
+
+          <div style="margin: 15px 0; color:var(--text-muted); font-size:12px;">— 或者 —</div>
+
+          <input type="text" id="input-image-url" class="dice-input" placeholder="输入图片网链URL（如 https://...）"
+            style="width:100%; margin-bottom:10px; box-sizing:border-box;" />
+          <button class="btn-primary" id="btn-image-url" style="width:100%">插入网络图片</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div id="about-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content about-modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>ℹ️ 关于</h3>
+        <button class="icon-btn modal-close" id="btn-close-about">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-about" style="text-align: center; margin-bottom: 10px;">
+          <div class="about-title"
+            style="font-size: 1.4em; font-weight: bold; margin-bottom: 12px; color: var(--accent);">TRPG写作工坊</div>
+          <div class="about-info" style="margin-bottom: 8px;">作者：不咕鸟（基德）</div>
+          <div class="about-info" style="margin-bottom: 8px;">辅助：Antigravity Gemini</div>
+          <div class="about-info" style="margin-bottom: 8px;">不咕鸟TRPG创想俱乐部：261751459</div>
         </div>
       </div>
     </div>

@@ -459,7 +459,7 @@ body {
   color: #333;
   cursor: text;
   /* Default parchment style */
-  background: linear-gradient(135deg, #fdf6e3 0%, #f5e6c8 50%, #fdf6e3 100%);
+  background: #fdf6e3;
   background-size: 100% 297mm;
   font-family: 'Noto Serif SC', serif;
   border: none;
@@ -476,7 +476,7 @@ body {
   --page-height: 297mm;
   --page-pad-top: 35mm;
   --page-pad-bottom: 30mm;
-  --page-pad-x: 45px;
+  --page-pad-x: 25.4mm;
   padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
 }
 
@@ -665,7 +665,7 @@ body {
 
 /* ---- TRPG Components (inside editor) ---- */
 .trpg-note {
-  background: linear-gradient(135deg, #e8dcc8 0%, #f5ecd7 100%);
+  background: #f5ecd7;
   border-left: 4px solid #c9ad6a;
   padding: 12px 16px;
   margin: 12px 0;
@@ -686,7 +686,7 @@ body {
 }
 
 .trpg-warning {
-  background: linear-gradient(135deg, #f8e0d0 0%, #fdf0e8 100%);
+  background: #fdf0e8;
   border-left: 4px solid #e74c3c;
   padding: 12px 16px;
   margin: 12px 0;
@@ -707,7 +707,7 @@ body {
 }
 
 .trpg-stat-block {
-  background: linear-gradient(180deg, #fdf6e3 0%, #f5e6c8 100%);
+  background: #fdf6e3;
   border: 2px solid #58180d;
   border-radius: 0;
   padding: 16px 20px;
@@ -722,7 +722,7 @@ body {
   content: '';
   display: block;
   height: 6px;
-  background: linear-gradient(90deg, #58180d 0%, #c9ad6a 45%, #c9ad6a 55%, #58180d 100%);
+  background: #58180d;
   margin: 4px -20px 8px;
 }
 
@@ -774,7 +774,7 @@ body {
 }
 
 .trpg-spell-card {
-  background: linear-gradient(135deg, #eef0ff 0%, #f8f0ff 100%);
+  background: #f8f0ff;
   border: 1px solid #9b59b6;
   border-top: 3px solid #9b59b6;
   border-radius: 6px;
@@ -807,7 +807,7 @@ body {
 }
 
 .trpg-item-card {
-  background: linear-gradient(135deg, #f0f8ed 0%, #f8fff5 100%);
+  background: #f8fff5;
   border: 1px solid #27ae60;
   border-top: 3px solid #27ae60;
   border-radius: 6px;
@@ -980,7 +980,7 @@ body {
 }
 
 .page-dark-fantasy .wysiwyg-editor {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  background: #1a1a2e;
   color: #d0d0d0;
   font-family: 'Noto Serif SC', serif;
 }
