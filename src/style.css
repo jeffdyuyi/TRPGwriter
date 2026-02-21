@@ -52,6 +52,30 @@
   box-sizing: border-box;
 }
 
+/* ---- Custom Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-light) transparent;
+}
+
 body {
   font-family: 'Noto Sans SC', sans-serif;
   background: var(--bg-primary);
@@ -293,6 +317,26 @@ body {
   min-width: 0;
 }
 
+/* ---- Status Bar ---- */
+.status-bar {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  gap: 8px;
+  flex-shrink: 0;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.status-divider {
+  color: var(--border-light);
+  font-size: 10px;
+}
+
 /* ---- Format Bar ---- */
 .format-bar {
   display: flex;
@@ -382,6 +426,21 @@ body {
   padding: 30px 20px 60px;
 }
 
+/* File switch fade-in */
+@keyframes editorFadeIn {
+  from {
+    opacity: 0.3;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.wysiwyg-editor.fade-in {
+  animation: editorFadeIn 0.25s ease;
+}
+
 /* Page container — holds editor + page overlay */
 .page-container {
   position: relative;
@@ -405,6 +464,11 @@ body {
   font-family: 'Noto Serif SC', serif;
   border: none;
   position: relative;
+  transition: box-shadow 0.3s ease;
+}
+
+.wysiwyg-editor:focus {
+  box-shadow: 0 0 0 2px var(--accent-subtle), 0 4px 20px var(--shadow);
 }
 
 /* Each 'page' area has padding via inner content — we use padding-based page areas */
@@ -820,6 +884,26 @@ body {
   font-size: 0.85em;
 }
 
+.dice-inline.rolled {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  animation: diceFlash 0.4s ease;
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+}
+
+@keyframes diceFlash {
+  0% {
+    transform: scale(1.3);
+  }
+
+  50% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* Page break */
 .page-break {
   page-break-after: always;
@@ -982,6 +1066,36 @@ body {
 
 .modal.hidden {
   display: none;
+}
+
+.modal:not(.hidden) .modal-overlay {
+  animation: modalOverlayIn 0.2s ease;
+}
+
+.modal:not(.hidden) .modal-content {
+  animation: modalContentIn 0.25s ease;
+}
+
+@keyframes modalOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalContentIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-overlay {
@@ -1150,6 +1264,25 @@ body {
 
 .setting-label {
   font-size: 14px;
+}
+
+.setting-about {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.about-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.about-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.8;
 }
 
 .setting-select {

@@ -160,9 +160,16 @@ function switchToFile(index) {
 function loadActiveFile() {
   const file = state.openFiles[state.activeFileIndex];
   if (!file) return;
+  // V5: file switch fade-in animation
+  editor.classList.remove('fade-in');
+  void editor.offsetWidth; // force reflow
+  editor.classList.add('fade-in');
   editor.innerHTML = file.doc.content || '';
   // Update layout after loading content
-  requestAnimationFrame(updatePageLayout);
+  requestAnimationFrame(() => {
+    updatePageLayout();
+    updateStatusBar();
+  });
 }
 
 function saveCurrentToMemory() {
@@ -318,6 +325,20 @@ function scheduleAutoSave() {
       showToast('已自动保存', 'info');
     }
   }, 2000);
+}
+
+// =============================================
+//  Status Bar
+// =============================================
+function updateStatusBar() {
+  const text = editor.innerText || '';
+  const chars = text.replace(/\s/g, '').length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const pageH = 297 * 3.7795275591; // mm to px
+  const pages = Math.max(1, Math.ceil(editor.scrollHeight / pageH));
+  $('#stat-words').textContent = `\u5B57\u6570: ${chars}`;
+  $('#stat-chars').textContent = `\u5B57\u7B26: ${text.length}`;
+  $('#stat-pages').textContent = `\u9875\u6570: ${pages}`;
 }
 
 // =============================================
@@ -571,6 +592,7 @@ function setupEventListeners() {
   editor.addEventListener('input', () => {
     scheduleAutoSave();
     updatePageLayout();
+    updateStatusBar();
   });
 
   // Window resize — update layout
@@ -613,6 +635,9 @@ function setupEventListeners() {
   // Header buttons
   $('#btn-toggle-sidebar').addEventListener('click', () => {
     toolbarPanel.classList.toggle('collapsed');
+    // V4: update sidebar toggle icon
+    const icon = $('#btn-toggle-sidebar').querySelector('.material-symbols-rounded');
+    icon.textContent = toolbarPanel.classList.contains('collapsed') ? 'menu_open' : 'menu';
   });
   $('#btn-new-file').addEventListener('click', () => createNewFile());
   $('#btn-dice').addEventListener('click', openDiceModal);
@@ -663,13 +688,6 @@ function setupEventListeners() {
   $('#btn-color-text').addEventListener('click', (e) => {
     state.colorMode = 'text';
     $('#color-popover-title').textContent = '文字颜色';
-    showPopover('color-popover', e.currentTarget);
-  });
-
-  // Color background
-  $('#btn-color-bg').addEventListener('click', (e) => {
-    state.colorMode = 'bg';
-    $('#color-popover-title').textContent = '背景颜色';
     showPopover('color-popover', e.currentTarget);
   });
 
