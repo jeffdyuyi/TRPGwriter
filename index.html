@@ -113,6 +113,9 @@
 
         <div class="toolbar-section">
           <div class="toolbar-section-title">页面布局</div>
+          <button class="toolbar-btn" data-action="bg-image" title="替换背景图">
+            <span class="material-symbols-rounded">wallpaper</span><span class="toolbar-label">背景图</span>
+          </button>
           <button class="toolbar-btn" data-action="toggle-columns" title="切换双栏排版">
             <span class="material-symbols-rounded">view_week</span><span class="toolbar-label">双栏模式</span>
           </button>
@@ -149,6 +152,7 @@
         <!-- Editable Content Area (WYSIWYG) -->
         <div id="editor-scroll" class="editor-scroll">
           <div id="page-container" class="page-container">
+            <div id="page-underlay" class="page-underlay"></div>
             <div id="editor" class="wysiwyg-editor" contenteditable="true" spellcheck="false">
               <!-- Content is loaded dynamically -->
             </div>
@@ -307,6 +311,47 @@
           <input type="text" id="input-image-url" class="dice-input" placeholder="输入图片网链URL（如 https://...）"
             style="width:100%; margin-bottom:10px; box-sizing:border-box;" />
           <button class="btn-primary" id="btn-image-url" style="width:100%">插入网络图片</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Image Upload Modal -->
+  <div id="bg-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content" style="max-width: 400px; padding-bottom: 30px;">
+      <div class="modal-header">
+        <h3>🖼️ 替换页面背景图</h3>
+        <button class="icon-btn modal-close" id="btn-close-bg">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div class="setting-group" style="display:block; text-align:left;">
+          <label class="setting-label" style="display:block; margin-bottom:8px;">应用范围</label>
+          <select id="bg-scope" class="setting-select" style="width:100%; margin-bottom: 15px;">
+            <option value="all">所有页面 (全覆盖)</option>
+            <option value="single">当前页面</option>
+            <option value="custom">指定页面 (支持复选, 如 1, 3, 5-7)</option>
+          </select>
+          <input type="text" id="bg-custom-pages" class="dice-input" placeholder="输入页码，如 1, 3, 5-7"
+            style="width:100%; margin-bottom:15px; display:none;" />
+
+          <button class="btn-primary" id="btn-bg-local"
+            style="width:100%; margin-bottom:15px; padding: 12px 0;">上传本地图片作背景</button>
+          <input type="file" id="input-bg-local" accept="image/*" style="display:none;" />
+
+          <div style="margin: 15px 0; color:var(--text-muted); font-size:12px; text-align:center;">— 或者 —</div>
+
+          <input type="text" id="input-bg-url" class="dice-input" placeholder="输入图片网链URL（如 https://...）"
+            style="width:100%; margin-bottom:10px; box-sizing:border-box;" />
+          <button class="btn-primary" id="btn-bg-url" style="width:100%; margin-bottom:15px;">使用网络图片作背景</button>
+
+          <div style="margin: 15px 0; border-top: 1px solid var(--border); padding-top: 15px;"></div>
+          <button class="toolbar-btn" id="btn-bg-clear"
+            style="width:100%; color:var(--accent); border: 1px solid var(--accent); flex-direction:row; padding:8px;">
+            <span class="material-symbols-rounded" style="font-size:18px;">delete</span> 移除选中范围的背景
+          </button>
         </div>
       </div>
     </div>

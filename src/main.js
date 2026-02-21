@@ -598,6 +598,7 @@ async function handleExportHTML() {
 //  Event Listeners
 // =============================================
 function setupEventListeners() {
+  initBgImageModal();
   // Editor input — schedule auto save & update layout
   editor.addEventListener('input', () => {
     scheduleAutoSave();
@@ -678,6 +679,8 @@ function setupEventListeners() {
     if (action) {
       if (action === 'image') {
         $('#image-modal').classList.remove('hidden');
+      } else if (action === 'bg-image') {
+        $('#bg-modal').classList.remove('hidden');
       } else {
         executeToolbarAction(action, editor);
       }
@@ -829,6 +832,97 @@ function setupEventListeners() {
   initFloatingDeleteBtn();
 }
 
+function initBgImageModal() {
+  const bgScopeSelect = $('#bg-scope');
+  if (bgScopeSelect) {
+    bgScopeSelect.addEventListener('change', (e) => {
+      $('#bg-custom-pages').style.display = e.target.value === 'custom' ? 'block' : 'none';
+    });
+  }
+
+  $('#btn-close-bg').addEventListener('click', () => {
+    $('#bg-modal').classList.add('hidden');
+  });
+
+  const applyBgToScope = (url) => {
+    const file = state.openFiles[state.activeFileIndex];
+    if (!file) return;
+    if (!file.doc.backgrounds) file.doc.backgrounds = {};
+
+    const scope = $('#bg-scope').value;
+    const mmToPx = 3.779527559;
+    const pageHeight = Math.ceil(297 * mmToPx);
+    const editorScrollEl = $('#editor-scroll');
+    const currentPage = Math.max(1, Math.ceil((editorScrollEl.scrollTop + editorScrollEl.clientHeight / 2) / pageHeight));
+
+    if (url === null) {
+      if (scope === 'all') file.doc.backgrounds = {};
+      else if (scope === 'single') delete file.doc.backgrounds[currentPage.toString()];
+      else if (scope === 'custom') {
+        const parts = $('#bg-custom-pages').value.split(',');
+        parts.forEach(p => {
+          p = p.trim();
+          if (p.includes('-')) {
+            const [s, e] = p.split('-').map(Number);
+            if (s && e && s <= e) for (let i = s; i <= e; i++) delete file.doc.backgrounds[i.toString()];
+          } else {
+            const n = Number(p);
+            if (n) delete file.doc.backgrounds[n.toString()];
+          }
+        });
+      }
+    } else {
+      if (scope === 'all') file.doc.backgrounds['all'] = url;
+      else if (scope === 'single') file.doc.backgrounds[currentPage.toString()] = url;
+      else if (scope === 'custom') {
+        const parts = $('#bg-custom-pages').value.split(',');
+        parts.forEach(p => {
+          p = p.trim();
+          if (p.includes('-')) {
+            const [s, e] = p.split('-').map(Number);
+            if (s && e && s <= e) for (let i = s; i <= e; i++) file.doc.backgrounds[i.toString()] = url;
+          } else {
+            const n = Number(p);
+            if (n) file.doc.backgrounds[n.toString()] = url;
+          }
+        });
+      }
+    }
+
+    file.unsaved = true;
+    renderFileTabs();
+    updatePageLayout();
+    $('#bg-modal').classList.add('hidden');
+    scheduleAutoSave();
+  };
+
+  $('#btn-bg-local').addEventListener('click', () => {
+    $('#input-bg-local').click();
+  });
+
+  $('#input-bg-local').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        applyBgToScope(event.target.result);
+        $('#input-bg-local').value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  $('#btn-bg-url').addEventListener('click', () => {
+    const url = $('#input-bg-url').value.trim();
+    if (url) {
+      applyBgToScope(url);
+      $('#input-bg-url').value = '';
+    }
+  });
+
+  $('#btn-bg-clear').addEventListener('click', () => applyBgToScope(null));
+}
+
 function initFloatingDeleteBtn() {
   const moduleDelBtn = document.createElement('button');
   moduleDelBtn.className = 'icon-btn';
@@ -918,14 +1012,30 @@ function updatePageLayout() {
   // Set height to multiple of page height
   editor.style.height = `${numPages * pageHeight}px`;
 
-  // Avoid unnecessary DOM updates if page count hasn't changed
-  const currentPages = overlay.querySelectorAll('.page-number').length;
-  if (currentPages === numPages) return;
-
-  // Rebuild overlay
+  // Avoid unnecessary DOM updates if page count hasn't changed...
+  // Wait, backgrounds could have changed, we should rebuild to reflect
   overlay.innerHTML = '';
+  const underlay = $('#page-underlay');
+  if (underlay) underlay.innerHTML = '';
+
+  const file = state.openFiles[state.activeFileIndex];
+  const bgData = (file && file.doc.backgrounds) || {};
 
   for (let i = 1; i <= numPages; i++) {
+    // Underlay bg card for individual page
+    if (underlay) {
+      const bgCard = document.createElement('div');
+      bgCard.className = 'page-bg-card';
+      bgCard.style.top = `${(i - 1) * pageHeight}px`;
+      bgCard.style.height = `${pageHeight}px`;
+
+      let bgImg = bgData[i.toString()] || bgData['all'];
+      if (bgImg) {
+        bgCard.style.backgroundImage = `url(${bgImg})`;
+      }
+      underlay.appendChild(bgCard);
+    }
+
     // Page Number
     const pageNum = document.createElement('div');
     pageNum.className = 'page-number';

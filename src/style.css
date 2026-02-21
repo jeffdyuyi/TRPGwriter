@@ -427,6 +427,26 @@ body {
   position: relative;
   width: 210mm;
   flex-shrink: 0;
+  z-index: 1;
+}
+
+/* Page underlay — holds multiple-page background cards */
+.page-underlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.page-bg-card {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #fdf6e3;
+  /* Default parchment */
 }
 
 .wysiwyg-editor {
@@ -439,9 +459,7 @@ body {
   font-size: 15px;
   color: #333;
   cursor: text;
-  /* Default parchment style */
-  background: #fdf6e3;
-  background-size: 100% 297mm;
+  background: transparent !important;
   font-family: 'Noto Serif SC', serif;
   border: none;
   position: relative;
@@ -1004,10 +1022,18 @@ body {
   color: #2980b9;
 }
 
+.page-modern .page-bg-card {
+  background-color: #ffffff;
+}
+
 .page-dark-fantasy .wysiwyg-editor {
   background: #1a1a2e;
   color: #d0d0d0;
   font-family: 'Noto Serif SC', serif;
+}
+
+.page-dark-fantasy .page-bg-card {
+  background-color: #1a1a2e;
 }
 
 .page-dark-fantasy .wysiwyg-editor h1,
