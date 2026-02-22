@@ -26,6 +26,35 @@ const TEMPLATES = {
     <p><strong><em>攻击名称。</em></strong> <em>近战武器攻击：</em>命中+4，触及5尺，单一目标。命中：5 (1d6+2) 挥砍伤害。</p>
   </div>`,
 
+    'coc-stat': `<div class="trpg-coc-stat-block" contenteditable="true">
+    <h3>拜亚基，星骏</h3>
+    <table class="coc-stat-table">
+      <thead><tr><th>属性</th><th>平均</th><th>掷骰</th></tr></thead>
+      <tbody>
+        <tr><td>STR</td><td>90</td><td>(5D6×5)</td></tr>
+        <tr><td>CON</td><td>50</td><td>(3D6×5)</td></tr>
+        <tr><td>SIZ</td><td>90</td><td>(5D6×5)</td></tr>
+        <tr><td>DEX</td><td>67</td><td>(3D6+3×5)</td></tr>
+        <tr><td>INT</td><td>50</td><td>(3D6×5)</td></tr>
+        <tr><td>POW</td><td>50</td><td>(3D6×5)</td></tr>
+      </tbody>
+    </table>
+    <p class="stat-line">HP：14</p>
+    <p class="stat-line">平均伤害加值：1D6</p>
+    <p class="stat-line">平均体格：2</p>
+    <p class="stat-line">平均魔法值：10</p>
+    <p class="stat-line">移动：5/16 飞行</p>
+    
+    <h4>攻击</h4>
+    <p class="stat-line">每回合攻击：2次</p>
+    <p class="stat-indent">战斗方式：拜亚基会用爪子攻击或撞击受害者，造成严重伤害</p>
+    <p class="stat-indent">格斗 55% (27/11)，伤害1D6+DB</p>
+    <p class="stat-indent">闪避 33% (16/6)</p>
+    <p class="stat-indent">护甲：2毛发与坚韧兽皮</p>
+    <p class="stat-indent">技能：聆听50%，侦查50%</p>
+    <p class="stat-indent">理智损失：直视拜亚基丧失1/1D6点理智。</p>
+  </div>`,
+
     spell: `<div class="trpg-spell-card" contenteditable="true">
     <h4>法术名称</h4>
     <p class="spell-meta">X环 XXX（仪式）</p>
@@ -34,6 +63,15 @@ const TEMPLATES = {
     <p class="spell-props"><strong>法术成分：</strong>V, S, M（材料描述）</p>
     <p class="spell-props"><strong>持续时间：</strong>专注，至多1分钟</p>
     <p>法术效果描述…</p>
+  </div>`,
+
+    'coc-spell': `<div class="trpg-coc-spell-card" contenteditable="true">
+    <h3>尼约格萨紧握术</h3>
+    <p class="coc-spell-meta">消耗：1+点魔法值、等于该轮中伤害值的两倍；1D20点理智值</p>
+    <p class="coc-spell-meta">施法用时：即时</p>
+    <p class="coc-spell-desc">施法者须消耗1点魔法值启动法术，目标必须在能够交谈的距离之内。施法者须和目标进行一次POW对抗检定并胜出，法术才能生效。如果施法者胜出，目标会感觉似乎有一只巨手或者触手挤压着他的心脏，在法术生效期间每轮损失1D3点耐久值。在受到这种攻击时，目标会暂时瘫痪，好像心脏病发作了一样。如果某轮中累计伤害使得目标的耐久归零，目标的胸口将破裂炸开，他冒着热气的心脏会出现在施法者的手中。</p>
+    <p class="coc-spell-desc">法术每持续一轮，施法者就需要消耗两倍于（此轮中）耐久伤害的魔法值。施法者每轮都必须专心施法以维持效果，并且每轮都要和目标做一次POW对抗检定并胜出。如果施法者无法集中精力、或者目标POW抵抗成功，法术终止。已经造成的伤害仍保留。</p>
+    <p class="coc-spell-desc" style="text-indent: 0; padding-left: 2em;">别名：邪恶的扭绞、黑暗巫师的暗中暴怒、可怖之抓挠</p>
   </div>`,
 
     item: `<div class="trpg-item-card" contenteditable="true">
@@ -60,7 +98,9 @@ export function executeToolbarAction(action, editorEl) {
         case 'note':
         case 'warning':
         case 'stat-block':
+        case 'coc-stat':
         case 'spell':
+        case 'coc-spell':
         case 'item':
             insertHTML(TEMPLATES[action] + '<p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>');
             break;

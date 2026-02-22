@@ -639,6 +639,16 @@ td { padding: 5px 10px; border-bottom: 1px solid #c9ad6a; }
 .trpg-stat-block h3 { color: #58180d; font-size: 1.4em; border: none; }
 .trpg-stat-block table th { background: transparent; color: #58180d; text-align: center; border-bottom: 2px solid #58180d; }
 .trpg-stat-block table td { text-align: center; border: none; }
+.trpg-coc-stat-block { background: #f7f3ed; border-top: 4px solid #4a5445; border-bottom: 4px solid #4a5445; padding: 16px 20px; margin: 16px 0; font-size: 0.95em; color: #333; }
+.trpg-coc-stat-block h3 { font-size: 1.4em; margin: 0 0 10px; font-weight: 700; color: #333; border: none; }
+.trpg-coc-stat-block table { width: 100%; margin: 10px 0; border-collapse: collapse; }
+.trpg-coc-stat-block table th { text-align: left; background: transparent; color: #4a5445; border-bottom: none; }
+.trpg-coc-stat-block table td { text-align: left; border: none; }
+.trpg-coc-stat-block .stat-indent { margin: 4px 0 4px 1.5em; text-indent: -1.5em; }
+.trpg-coc-spell-card { padding: 10px 16px; margin: 12px 0; background: transparent; }
+.trpg-coc-spell-card h3 { color: #333; font-size: 1.25em; margin: 0 0 6px; font-weight: 700; border: none; }
+.trpg-coc-spell-card .coc-spell-meta { font-size: 0.95em; color: #333; margin: 4px 0; }
+.trpg-coc-spell-card .coc-spell-desc { font-size: 0.95em; color: #333; margin: 8px 0; text-indent: 2em; }
 .trpg-spell-card { background: #f8f0ff; border: 1px solid #9b59b6; border-top: 3px solid #9b59b6; border-radius: 6px; padding: 14px 18px; margin: 12px 0; }
 .trpg-spell-card h4 { color: #6c3483; font-style: normal; border: none; }
 .trpg-item-card { background: #f8fff5; border: 1px solid #27ae60; border-top: 3px solid #27ae60; border-radius: 6px; padding: 14px 18px; margin: 12px 0; }
@@ -1182,7 +1192,7 @@ function initFloatingDeleteBtn() {
   let currentHoverModule = null;
 
   editor.addEventListener('mousemove', (e) => {
-    const mod = e.target.closest('.trpg-note, .trpg-warning, .trpg-stat-block, .trpg-spell-card, .trpg-item-card, .dice-inline');
+    const mod = e.target.closest('.trpg-note, .trpg-warning, .trpg-stat-block, .trpg-coc-stat-block, .trpg-spell-card, .trpg-coc-spell-card, .trpg-item-card, .dice-inline');
     if (mod) {
       if (currentHoverModule !== mod) {
         currentHoverModule = mod;
