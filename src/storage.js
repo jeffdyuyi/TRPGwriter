@@ -231,6 +231,7 @@ export function loadPreferences() {
         theme: 'dark',
         pageStyle: 'parchment',
         autoSave: true,
+        margins: { top: 35, bottom: 30, left: 25.4, right: 25.4 },
     };
     try {
         const saved = JSON.parse(localStorage.getItem('trpg-prefs') || '{}');

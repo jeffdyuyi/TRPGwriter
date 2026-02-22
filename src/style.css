@@ -475,8 +475,9 @@ body {
   --page-height: 297mm;
   --page-pad-top: 35mm;
   --page-pad-bottom: 30mm;
-  --page-pad-x: 25.4mm;
-  padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
+  --page-pad-left: 25.4mm;
+  --page-pad-right: 25.4mm;
+  padding: var(--page-pad-top) var(--page-pad-right) var(--page-pad-bottom) var(--page-pad-left);
 }
 
 /* Page shadow overlay — creates page card shadows and dividers */

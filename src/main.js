@@ -103,6 +103,20 @@ function applyPreferences(prefs) {
 
   // Heading style
   updateHeadingStyle(prefs.headingStyle || 'classic');
+
+  // Margins
+  if (prefs.margins) {
+    updatePageMargins(prefs.margins);
+  }
+}
+
+function updatePageMargins(margins) {
+  const editor = $('#editor');
+  if (!editor) return;
+  editor.style.setProperty('--page-pad-top', `${margins.top}mm`);
+  editor.style.setProperty('--page-pad-bottom', `${margins.bottom}mm`);
+  editor.style.setProperty('--page-pad-left', `${margins.left}mm`);
+  editor.style.setProperty('--page-pad-right', `${margins.right}mm`);
 }
 
 function updatePageStyle(style) {
@@ -449,6 +463,13 @@ function openSettingsModal() {
   $('#setting-page-style').value = state.prefs.pageStyle || 'parchment';
   $('#setting-heading-style').value = state.prefs.headingStyle || 'classic';
   $('#setting-auto-save').checked = state.prefs.autoSave !== false;
+
+  const margins = state.prefs.margins || { top: 35, bottom: 30, left: 25.4, right: 25.4 };
+  $('#setting-margin-top').value = margins.top;
+  $('#setting-margin-bottom').value = margins.bottom;
+  $('#setting-margin-left').value = margins.left;
+  $('#setting-margin-right').value = margins.right;
+
   modal.classList.remove('hidden');
 }
 
@@ -569,7 +590,7 @@ img { max-width: 100%; }
 .page-container { position: relative; width: 210mm; z-index: 1; }
 .page-underlay { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .page-bg-card { position: absolute; left: 0; width: 100%; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.wysiwyg-editor { position: relative; width: 100%; outline: none; background: transparent; }
+.wysiwyg-editor { position: relative; width: 100%; outline: none; background: transparent; padding: var(--page-pad-top, 35mm) var(--page-pad-right, 25.4mm) var(--page-pad-bottom, 30mm) var(--page-pad-left, 25.4mm); }
 @media print {
   body { margin: 0; padding: 0; max-width: none; }
   .page-container { margin: 0; box-shadow: none; }
@@ -777,6 +798,22 @@ function setupEventListeners() {
     state.prefs.autoSave = e.target.checked;
     persistPreferences();
   });
+
+  const handleMarginChange = () => {
+    const top = parseFloat($('#setting-margin-top').value) || 35;
+    const bottom = parseFloat($('#setting-margin-bottom').value) || 30;
+    const left = parseFloat($('#setting-margin-left').value) || 25.4;
+    const right = parseFloat($('#setting-margin-right').value) || 25.4;
+    state.prefs.margins = { top, bottom, left, right };
+    applyPreferences(state.prefs);
+    persistPreferences();
+    updatePageLayout();
+  };
+
+  $('#setting-margin-top').addEventListener('change', handleMarginChange);
+  $('#setting-margin-bottom').addEventListener('change', handleMarginChange);
+  $('#setting-margin-left').addEventListener('change', handleMarginChange);
+  $('#setting-margin-right').addEventListener('change', handleMarginChange);
 
   // Close modals on overlay click
   $$('.modal-overlay').forEach(overlay => {
