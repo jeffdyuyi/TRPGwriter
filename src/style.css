@@ -648,9 +648,12 @@ body {
   text-align: justify;
 }
 
-.wysiwyg-editor.two-columns h1 {
+.wysiwyg-editor.two-columns h1,
+.wysiwyg-editor.two-columns h2,
+.wysiwyg-editor.two-columns h3,
+.wysiwyg-editor.two-columns .page-break {
   column-span: all;
-  /* Title spans both columns */
+  /* Title and major headers span both columns to ensure top-to-bottom continuation */
 }
 
 /* Ensure components don't break awkwardly in columns */
