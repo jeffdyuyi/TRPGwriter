@@ -706,6 +706,43 @@ body {
   letter-spacing: 1px;
 }
 
+.trpg-generic-block {
+  margin: 16px 0;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--text-color, #333);
+  position: relative;
+}
+
+.trpg-generic-block h3.generic-title {
+  font-family: 'Noto Serif SC', serif;
+  color: #7a200d;
+  font-size: 1.4em;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  border: none;
+}
+
+.trpg-generic-block hr.generic-divider {
+  border: 0;
+  height: 1px;
+  background-color: #b0a79a;
+  margin: 4px 0 6px 0;
+}
+
+.trpg-generic-block p.generic-subtitle {
+  font-style: italic;
+  font-size: 0.95em;
+  margin: 0 0 8px 0;
+  color: #444;
+}
+
+.trpg-generic-block p.generic-body {
+  text-indent: 2em;
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
 .trpg-stat-block {
   background: #fdf6e3;
   border: 2px solid #58180d;

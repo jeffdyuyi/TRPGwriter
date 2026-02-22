@@ -285,6 +285,11 @@ export function exportToHTML(doc) {
     .trpg-note::before { content: '📜 提示'; display: block; font-weight: 700; color: #7c6420; margin-bottom: 4px; font-size: 0.85em; }
     .trpg-warning { background: #fdf0e8; border-left: 4px solid #e74c3c; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
     .trpg-warning::before { content: '⚠️ 警告'; display: block; font-weight: 700; color: #c0392b; margin-bottom: 4px; font-size: 0.85em; }
+    .trpg-generic-block { margin: 16px 0; padding: 4px 0; background: transparent; }
+    .trpg-generic-block h3.generic-title { font-family: 'Noto Serif SC', serif; color: #7a200d; font-size: 1.4em; font-weight: 700; margin: 0 0 4px 0; border: none; }
+    .trpg-generic-block hr.generic-divider { border: 0; height: 1px; background-color: #b0a79a; margin: 4px 0 6px 0; }
+    .trpg-generic-block p.generic-subtitle { font-style: italic; font-size: 0.95em; margin: 0 0 8px 0; color: #444; }
+    .trpg-generic-block p.generic-body { text-indent: 2em; margin: 6px 0; line-height: 1.6; }
     .trpg-stat-block { background: linear-gradient(180deg, #fdf6e3, #f5e6c8); border: 2px solid #58180d; padding: 16px 20px; margin: 16px 0; font-size: 0.92em; }
     .trpg-stat-block::before, .trpg-stat-block::after { content: ''; display: block; height: 6px; background: linear-gradient(90deg, #58180d 0%, #c9ad6a 45%, #c9ad6a 55%, #58180d 100%); margin: 4px -20px 8px; }
     .trpg-stat-block::after { margin: 8px -20px 4px; }

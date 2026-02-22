@@ -10,6 +10,14 @@ const TEMPLATES = {
 
     warning: `<div class="trpg-warning" contenteditable="true"><p>在此输入警告内容…</p></div>`,
 
+    'generic-block': `<div class="trpg-generic-block" contenteditable="true">
+    <h3 class="generic-title">通用专长或物品名称 <span style="font-family: Arial, sans-serif; font-size:0.85em; font-weight: normal;">English Name</span></h3>
+    <hr class="generic-divider">
+    <p class="generic-subtitle"><em>先决条件 / 稀有度说明（支持斜体和颜色）</em></p>
+    <p class="generic-body">在此处输入第一段详细描述。你可以在这里详细阐述物品的功能机制、专长的具体加成、或是NPC的背景信息和特殊能力。只要是无边框的泛用性说明都可以使用此区块。</p>
+    <p class="generic-body">这是第二段落。你可以继续按下回车键以产生更多具备标准段落缩进的独立文本行，用来记录额外的规则说明。</p>
+  </div>`,
+
     'stat-block': `<div class="trpg-stat-block" contenteditable="true">
     <h3>怪物名称</h3>
     <p class="stat-subtitle"><em>中型 人形生物，任意阵营</em></p>
@@ -97,6 +105,7 @@ export function executeToolbarAction(action, editorEl) {
         // TRPG elements — insert HTML templates
         case 'note':
         case 'warning':
+        case 'generic-block':
         case 'stat-block':
         case 'coc-stat':
         case 'spell':

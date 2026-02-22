@@ -1192,7 +1192,7 @@ function initFloatingDeleteBtn() {
   let currentHoverModule = null;
 
   editor.addEventListener('mousemove', (e) => {
-    const mod = e.target.closest('.trpg-note, .trpg-warning, .trpg-stat-block, .trpg-coc-stat-block, .trpg-spell-card, .trpg-coc-spell-card, .trpg-item-card, .dice-inline');
+    const mod = e.target.closest('.trpg-generic-block, .trpg-note, .trpg-warning, .trpg-stat-block, .trpg-coc-stat-block, .trpg-spell-card, .trpg-coc-spell-card, .trpg-item-card, .dice-inline');
     if (mod) {
       if (currentHoverModule !== mod) {
         currentHoverModule = mod;
