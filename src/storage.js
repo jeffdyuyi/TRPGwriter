@@ -111,7 +111,12 @@ export async function saveDocument(doc) {
         const docs = JSON.parse(localStorage.getItem('trpg-docs') || '{}');
         doc.updatedAt = Date.now();
         docs[doc.id] = doc;
-        localStorage.setItem('trpg-docs', JSON.stringify(docs));
+        try {
+            localStorage.setItem('trpg-docs', JSON.stringify(docs));
+        } catch (err) {
+            console.error('Storage full! Could not save to localStorage.', err);
+            if (window.__showToast) window.__showToast('存储空间不足或不可用，保存失败！', 'error');
+        }
     }
 }
 
@@ -154,7 +159,11 @@ export async function deleteDocument(id) {
     } catch (e) {
         const docs = JSON.parse(localStorage.getItem('trpg-docs') || '{}');
         delete docs[id];
-        localStorage.setItem('trpg-docs', JSON.stringify(docs));
+        try {
+            localStorage.setItem('trpg-docs', JSON.stringify(docs));
+        } catch (err) {
+            console.error('Extremly unlikely fail: Could not update localStorage after delete.', err);
+        }
     }
 }
 

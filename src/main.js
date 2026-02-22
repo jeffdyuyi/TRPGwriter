@@ -1191,19 +1191,21 @@ function initFloatingDeleteBtn() {
 
   let currentHoverModule = null;
 
-  editor.addEventListener('mousemove', (e) => {
-    const mod = e.target.closest('.trpg-generic-block, .trpg-note, .trpg-warning, .trpg-stat-block, .trpg-coc-stat-block, .trpg-spell-card, .trpg-coc-spell-card, .trpg-item-card, .dice-inline');
-    if (mod) {
-      if (currentHoverModule !== mod) {
-        currentHoverModule = mod;
-        updateDeleteBtnPos();
+  if (container) {
+    container.addEventListener('mousemove', (e) => {
+      const mod = e.target.closest('.trpg-generic-block, .trpg-note, .trpg-warning, .trpg-stat-block, .trpg-coc-stat-block, .trpg-spell-card, .trpg-coc-spell-card, .trpg-item-card, .dice-inline');
+      if (mod && editor.contains(mod)) {
+        if (currentHoverModule !== mod) {
+          currentHoverModule = mod;
+          updateDeleteBtnPos();
+        }
+      } else {
+        if (e.target.closest && e.target.closest('.icon-btn') === moduleDelBtn) return;
+        moduleDelBtn.style.display = 'none';
+        currentHoverModule = null;
       }
-    } else {
-      if (e.target.closest && e.target.closest('.icon-btn') === moduleDelBtn) return;
-      moduleDelBtn.style.display = 'none';
-      currentHoverModule = null;
-    }
-  });
+    });
+  }
 
   function updateDeleteBtnPos() {
     if (!currentHoverModule) return;
@@ -1256,14 +1258,24 @@ function updatePageLayout() {
   // Set height to multiple of page height
   editor.style.height = `${numPages * pageHeight}px`;
 
-  // Avoid unnecessary DOM updates if page count hasn't changed...
-  // Wait, backgrounds could have changed, we should rebuild to reflect
+  const file = state.openFiles[state.activeFileIndex];
+  const bgData = (file && file.doc.backgrounds) || {};
+  const bgDataStr = JSON.stringify(bgData);
+  const fileId = file ? file.id : null;
+
+  // Memoization: Do not re-create DOM elements if nothing has changed
+  if (updatePageLayout.lastRun
+    && updatePageLayout.lastRun.fileId === fileId
+    && updatePageLayout.lastRun.numPages === numPages
+    && updatePageLayout.lastRun.bgDataStr === bgDataStr) {
+    return;
+  }
+
+  updatePageLayout.lastRun = { fileId, numPages, bgDataStr };
+
   overlay.innerHTML = '';
   const underlay = $('#page-underlay');
   if (underlay) underlay.innerHTML = '';
-
-  const file = state.openFiles[state.activeFileIndex];
-  const bgData = (file && file.doc.backgrounds) || {};
 
   for (let i = 1; i <= numPages; i++) {
     // Underlay bg card for individual page
