@@ -104,6 +104,9 @@ function applyPreferences(prefs) {
   // Heading style
   updateHeadingStyle(prefs.headingStyle || 'classic');
 
+  // Custom Styles
+  updateCustomStylesCSS(prefs.customStyles);
+
   // Margins
   if (prefs.margins) {
     updatePageMargins(prefs.margins);
@@ -117,6 +120,46 @@ function updatePageMargins(margins) {
   editor.style.setProperty('--page-pad-bottom', `${margins.bottom}mm`);
   editor.style.setProperty('--page-pad-left', `${margins.left}mm`);
   editor.style.setProperty('--page-pad-right', `${margins.right}mm`);
+}
+
+function updateCustomStylesCSS(styles) {
+  let styleEl = document.getElementById('custom-styles-sheet');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'custom-styles-sheet';
+    document.head.appendChild(styleEl);
+  }
+  if (!styles || styles.length === 0) {
+    styleEl.innerHTML = '';
+  } else {
+    let css = '';
+    styles.forEach(s => {
+      css += `.wysiwyg-editor .cs-${s.id} { `;
+      if (s.color) css += `color: ${s.color}; `;
+      if (s.font) css += `font-family: ${s.font}; `;
+      if (s.size) css += `font-size: ${s.size}; `;
+      css += `}\n`;
+    });
+    styleEl.innerHTML = css;
+  }
+  renderCustomStylesSelect(styles);
+}
+
+function renderCustomStylesSelect(styles) {
+  const select = $('#block-type-select');
+  if (!select) return;
+  // Remove existing custom options
+  Array.from(select.options).forEach(opt => {
+    if (opt.value.startsWith('cs-')) opt.remove();
+  });
+  // Add new styles
+  (styles || []).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = `cs-${s.id}`;
+    opt.textContent = s.name;
+    opt.dataset.tag = s.tag;
+    select.appendChild(opt);
+  });
 }
 
 function updatePageStyle(style) {
@@ -381,8 +424,25 @@ function updateFormatBarState() {
   const select = $('#block-type-select');
   if (select) {
     const tagMap = { h1: 'h1', h2: 'h2', h3: 'h3', h4: 'h4', p: 'p' };
-    const normalizedBlock = block.replace(/<|>/g, '').toLowerCase();
-    select.value = tagMap[normalizedBlock] || 'p';
+    let currentVal = tagMap[block ? block.replace(/<|>/g, '').toLowerCase() : ''] || 'p';
+
+    // Check if it has a custom style class
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0) {
+      let node = sel.anchorNode;
+      if (node && node.nodeType === 3) node = node.parentNode;
+      const closestBlock = node ? node.closest('h1, h2, h3, h4, p, blockquote, div') : null;
+      if (closestBlock && editor.contains(closestBlock)) {
+        const match = closestBlock.className.match(/\bcs-\w+\b/);
+        if (match) currentVal = match[0];
+      }
+    }
+
+    if (Array.from(select.options).some(o => o.value === currentVal)) {
+      select.value = currentVal;
+    } else {
+      select.value = 'p';
+    }
   }
 }
 
@@ -730,9 +790,64 @@ function setupEventListeners() {
 
   // Format bar — block type select
   $('#block-type-select').addEventListener('change', (e) => {
-    applyBlockFormat(e.target.value);
+    const val = e.target.value;
+    if (val.startsWith('cs-')) {
+      // Custom style
+      const styleId = val.replace('cs-', '');
+      const style = (state.prefs.customStyles || []).find(s => s.id === styleId);
+      if (style) {
+        applyBlockFormat(style.tag);
+        setTimeout(() => {
+          const sel = window.getSelection();
+          if (sel.rangeCount > 0) {
+            let node = sel.anchorNode;
+            if (node && node.nodeType === 3) node = node.parentNode;
+            const block = node ? node.closest('h1, h2, h3, h4, p, blockquote, div') : null;
+            if (block && editor.contains(block)) {
+              block.className = block.className.replace(/\bcs-\w+\b/g, '').trim();
+              block.classList.add(`cs-${style.id}`);
+              editor.dispatchEvent(new Event('input'));
+            }
+          }
+        }, 0);
+      }
+    } else {
+      // Standard style
+      applyBlockFormat(val);
+      setTimeout(() => {
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+          let node = sel.anchorNode;
+          if (node && node.nodeType === 3) node = node.parentNode;
+          const block = node ? node.closest('h1, h2, h3, h4, p, blockquote, div') : null;
+          if (block && editor.contains(block)) {
+            block.className = block.className.replace(/\bcs-\w+\b/g, '').trim();
+            editor.dispatchEvent(new Event('input'));
+          }
+        }
+      }, 0);
+    }
     editor.focus();
   });
+
+  // Font Size Select
+  const fontSizeSelect = $('#font-size-select');
+  if (fontSizeSelect) {
+    fontSizeSelect.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (!val) return;
+      document.execCommand('styleWithCSS', false, false);
+      document.execCommand('fontSize', false, '7');
+      const fontEls = editor.querySelectorAll('font[size="7"]');
+      for (let el of fontEls) {
+        el.removeAttribute('size');
+        el.style.fontSize = val;
+      }
+      e.target.value = '';
+      editor.focus();
+      editor.dispatchEvent(new Event('input'));
+    });
+  }
 
   // Font select
   $('#btn-font-select').addEventListener('click', (e) => {
@@ -829,6 +944,81 @@ function setupEventListeners() {
       $$('.popover:not(.hidden)').forEach(p => p.classList.add('hidden'));
     }
   });
+
+  // Custom Styles Modal Logic
+  const btnManageCustomStyles = $('#btn-manage-custom-styles');
+  if (btnManageCustomStyles) {
+    btnManageCustomStyles.addEventListener('click', () => {
+      renderCustomStylesManager();
+      $('#custom-styles-modal').classList.remove('hidden');
+    });
+  }
+
+  const btnCloseCustomStyles = $('#btn-close-custom-styles');
+  if (btnCloseCustomStyles) {
+    btnCloseCustomStyles.addEventListener('click', () => {
+      $('#custom-styles-modal').classList.add('hidden');
+    });
+  }
+
+  const btnAddCustomStyle = $('#btn-add-custom-style');
+  if (btnAddCustomStyle) {
+    btnAddCustomStyle.addEventListener('click', () => {
+      const name = $('#new-cs-name').value.trim();
+      if (!name) return;
+      const newStyle = {
+        id: Date.now().toString(36),
+        name: name,
+        tag: $('#new-cs-tag').value,
+        color: $('#new-cs-color').value,
+        font: $('#new-cs-font').value !== 'inherit' ? $('#new-cs-font').value : '',
+        size: $('#new-cs-size').value.trim()
+      };
+      if (!state.prefs.customStyles) state.prefs.customStyles = [];
+      state.prefs.customStyles.push(newStyle);
+      persistPreferences();
+      updateCustomStylesCSS(state.prefs.customStyles);
+      renderCustomStylesManager();
+
+      $('#new-cs-name').value = '';
+      $('#new-cs-size').value = '';
+    });
+  }
+
+  function renderCustomStylesManager() {
+    const list = $('#custom-styles-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const styles = state.prefs.customStyles || [];
+    if (styles.length === 0) {
+      list.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:10px;">暂无自定义样式</div>';
+      return;
+    }
+    styles.forEach(s => {
+      const row = document.createElement('div');
+      row.style = `display:flex; justify-content:space-between; align-items:center; padding: 6px; border-bottom:1px solid var(--border-light);`;
+      row.innerHTML = `
+          <div style="flex:1; display:flex; align-items:center; gap:8px;">
+            <span style="font-weight:bold">${s.name}</span>
+            <span style="font-size:11px; color:var(--text-muted); background:var(--bg-tertiary); padding:2px 4px; border-radius:3px;">${s.tag}</span>
+            ${s.color ? `<span style="width:12px;height:12px;background:${s.color};border-radius:50%;display:inline-block;" title="颜色"></span>` : ''}
+            ${s.font ? `<span style="font-family:${s.font.replace(/'/g, '')};font-size:12px;">字体</span>` : ''}
+            ${s.size ? `<span style="font-size:11px;">[${s.size}]</span>` : ''}
+          </div>
+          <button class="icon-btn btn-del-cs" data-id="${s.id}" style="width:24px;height:24px;"><span class="material-symbols-rounded" style="font-size:16px;color:var(--accent);">delete</span></button>
+        `;
+      list.appendChild(row);
+    });
+    $$('.btn-del-cs').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.dataset.id;
+        state.prefs.customStyles = state.prefs.customStyles.filter(s => s.id !== id);
+        persistPreferences();
+        updateCustomStylesCSS(state.prefs.customStyles);
+        renderCustomStylesManager();
+      });
+    });
+  }
 
   // Image modal logic
   $('#btn-close-image').addEventListener('click', () => {
@@ -992,7 +1182,7 @@ function initFloatingDeleteBtn() {
   let currentHoverModule = null;
 
   editor.addEventListener('mousemove', (e) => {
-    const mod = e.target.closest('.trpg-note, .trpg-warning, .trpg-stat-block, .trpg-spell-card, .trpg-item-card');
+    const mod = e.target.closest('.trpg-note, .trpg-warning, .trpg-stat-block, .trpg-spell-card, .trpg-item-card, .dice-inline');
     if (mod) {
       if (currentHoverModule !== mod) {
         currentHoverModule = mod;

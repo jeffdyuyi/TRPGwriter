@@ -62,13 +62,13 @@ export function executeToolbarAction(action, editorEl) {
         case 'stat-block':
         case 'spell':
         case 'item':
-            insertHTML(TEMPLATES[action] + '<p><br></p>');
+            insertHTML(TEMPLATES[action] + '<p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>');
             break;
 
         case 'dice-inline': {
             const formula = prompt('输入骰子公式（如 1d20, 2d6+3, 4d6kh3）:', '1d20');
             if (formula) {
-                const html = `<span class="dice-inline" data-dice="${escapeAttr(formula)}" contenteditable="false">${escapeHtml(formula)}</span>&nbsp;`;
+                const html = `<span class="dice-inline" data-dice="${escapeAttr(formula)}" contenteditable="false">${escapeHtml(formula)}</span>&#8203;`;
                 insertHTML(html);
             }
             break;
@@ -80,15 +80,15 @@ export function executeToolbarAction(action, editorEl) {
             break;
 
         case 'page-break':
-            insertHTML('<hr class="page-break"><p><br></p>');
+            insertHTML('<hr class="page-break"><p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>');
             break;
 
         case 'column-break':
-            insertHTML('<hr class="column-break"><p><br></p>');
+            insertHTML('<hr class="column-break"><p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>');
             break;
 
         case 'hr':
-            insertHTML('<hr><p><br></p>');
+            insertHTML('<hr><p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>');
             break;
 
         // Insert elements
@@ -181,7 +181,7 @@ function buildTableHTML(rows, cols) {
         for (let c = 0; c < cols; c++) html += '<td>内容</td>';
         html += '</tr>';
     }
-    html += '</tbody></table><p><br></p>';
+    html += '</tbody></table><p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>';
     return html;
 }
 

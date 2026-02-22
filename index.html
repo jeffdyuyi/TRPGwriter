@@ -59,7 +59,9 @@
       <!-- Left Sidebar (Format Tools & Layout) -->
       <aside id="format-panel" class="toolbar-panel">
         <div class="toolbar-section">
-          <div class="toolbar-section-title">文本样式</div>
+          <div class="toolbar-section-title">文本样式 <span id="btn-manage-custom-styles" class="material-symbols-rounded"
+              style="font-size:12px;cursor:pointer;vertical-align:middle;color:var(--accent);"
+              title="管理自定义样式">edit</span></div>
           <div style="text-align:center; margin-bottom: 6px;">
             <select id="block-type-select" class="format-select" title="段落格式" style="width: 80px;">
               <option value="p">正文</option>
@@ -100,6 +102,20 @@
         <div class="toolbar-section">
           <div class="toolbar-section-title">高级格式</div>
           <div class="toolbar-grid">
+            <div style="width:100%; text-align:center; padding-bottom: 4px;">
+              <select id="font-size-select" class="format-select" style="width: 76px;" title="字体大小">
+                <option value="">大小</option>
+                <option value="12px">12px</option>
+                <option value="14px">14px</option>
+                <option value="15px">15px</option>
+                <option value="16px">16px</option>
+                <option value="18px">18px</option>
+                <option value="20px">20px</option>
+                <option value="24px">24px</option>
+                <option value="28px">28px</option>
+                <option value="36px">36px</option>
+              </select>
+            </div>
             <button class="format-btn" id="btn-font-select" title="选择字体"><span
                 class="material-symbols-rounded">font_download</span></button>
             <button class="format-btn" id="btn-color-text" title="文字颜色"><span
@@ -140,9 +156,6 @@
           </button>
           <button class="toolbar-btn" data-action="link" title="插入链接">
             <span class="material-symbols-rounded">link</span><span class="toolbar-label">链接</span>
-          </button>
-          <button class="toolbar-btn" data-action="blockquote" title="引用块">
-            <span class="material-symbols-rounded">format_quote</span><span class="toolbar-label">引用</span>
           </button>
         </div>
       </aside>
@@ -185,8 +198,9 @@
               class="material-symbols-rounded">auto_fix_high</span><span class="toolbar-label">法术卡</span></button>
           <button class="toolbar-btn" data-action="item" title="物品卡片"><span
               class="material-symbols-rounded">shield</span><span class="toolbar-label">物品卡</span></button>
-          <button class="toolbar-btn" data-action="dice-inline" title="行内骰子"><span
-              class="material-symbols-rounded">casino</span><span class="toolbar-label">骰子</span></button>
+          class="material-symbols-rounded">casino</span><span class="toolbar-label">骰子</span></button>
+          <button class="toolbar-btn" data-action="blockquote" title="引用块"><span
+              class="material-symbols-rounded">format_quote</span><span class="toolbar-label">引用</span></button>
         </div>
         <div class="toolbar-section">
           <div class="toolbar-section-title">外部数据</div>
@@ -264,10 +278,18 @@
         <div class="setting-group">
           <label class="setting-label">页边距 (mm)</label>
           <div class="setting-control" style="display: flex; gap: 4px;">
-            <input type="number" id="setting-margin-top" class="dice-input" style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="上" title="上边距" min="0" max="100" />
-            <input type="number" id="setting-margin-bottom" class="dice-input" style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="下" title="下边距" min="0" max="100" />
-            <input type="number" id="setting-margin-left" class="dice-input" style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="左" title="左边距" min="0" max="100" />
-            <input type="number" id="setting-margin-right" class="dice-input" style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="右" title="右边距" min="0" max="100" />
+            <input type="number" id="setting-margin-top" class="dice-input"
+              style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="上" title="上边距" min="0"
+              max="100" />
+            <input type="number" id="setting-margin-bottom" class="dice-input"
+              style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="下" title="下边距" min="0"
+              max="100" />
+            <input type="number" id="setting-margin-left" class="dice-input"
+              style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="左" title="左边距" min="0"
+              max="100" />
+            <input type="number" id="setting-margin-right" class="dice-input"
+              style="width: 48px; padding: 2px 4px; text-align: center;" placeholder="右" title="右边距" min="0"
+              max="100" />
           </div>
         </div>
         <div class="setting-group">
@@ -294,6 +316,8 @@
           <div class="about-info">作者：不咕鸟（基德）</div>
           <div class="about-info">辅助：Antigravity Gemini</div>
           <div class="about-info">不咕鸟TRPG创想俱乐部：261751459</div>
+          <div class="about-info">成都秘密基地约团站：<a href="http://118.89.179.143/schedule" target="_blank"
+              style="color:var(--accent);">http://118.89.179.143/schedule</a></div>
         </div>
       </div>
     </div>
@@ -383,6 +407,8 @@
           <div class="about-info" style="margin-bottom: 8px;">作者：不咕鸟（基德）</div>
           <div class="about-info" style="margin-bottom: 8px;">辅助：Antigravity Gemini</div>
           <div class="about-info" style="margin-bottom: 8px;">不咕鸟TRPG创想俱乐部：261751459</div>
+          <div class="about-info" style="margin-bottom: 8px;">成都秘密基地约团站：<a href="http://118.89.179.143/schedule"
+              target="_blank" style="color:var(--accent);">http://118.89.179.143/schedule</a></div>
         </div>
       </div>
     </div>
@@ -413,6 +439,44 @@
       <div class="color-custom">
         <input type="color" id="custom-color" value="#e74c3c" />
         <label for="custom-color">自定义颜色</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Styles Modal -->
+  <div id="custom-styles-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3>✨ 自定义标题样式</h3>
+        <button class="icon-btn modal-close" id="btn-close-custom-styles">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; gap:8px; margin-bottom:15px; align-items:center;">
+          <input type="text" id="new-cs-name" class="dice-input" placeholder="样式名" style="flex:1" />
+          <select id="new-cs-tag" class="setting-select" style="width:80px">
+            <option value="h1">标题1</option>
+            <option value="h2">标题2</option>
+            <option value="h3">标题3</option>
+            <option value="h4">标题4</option>
+            <option value="p">正文</option>
+          </select>
+          <input type="color" id="new-cs-color" value="#58180d" style="width:28px;height:28px;padding:0;border:none;"
+            title="颜色" />
+          <select id="new-cs-font" class="setting-select" style="width:90px">
+            <option value="inherit">默认字体</option>
+            <option value="'Noto Serif SC', serif">思源宋体</option>
+            <option value="'Noto Sans SC', sans-serif">思源黑体</option>
+            <option value="'ZCOOL XiaoWei', serif">站酷小薇体</option>
+          </select>
+          <input type="text" id="new-cs-size" class="dice-input" placeholder="大小(如1.2em)" style="width:90px" />
+          <button class="btn-primary" id="btn-add-custom-style" style="padding:0 12px; height:28px;">保存</button>
+        </div>
+        <div id="custom-styles-list"
+          style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius:4px; padding:8px;">
+        </div>
       </div>
     </div>
   </div>
