@@ -27,7 +27,8 @@ import {
   deleteDocument,
   loadPreferences,
   savePreferences,
-  exportToHTML
+  exportToHTML,
+  exportToMarkdown
 } from './storage.js';
 
 // =============================================
@@ -692,6 +693,25 @@ async function handleExportHTML() {
   }
 }
 
+function handleExportMarkdown() {
+  saveCurrentToMemory();
+  const file = state.openFiles[state.activeFileIndex];
+  if (!file) return;
+  try {
+    const md = exportToMarkdown(file.doc);
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${file.doc.title || 'trpg-doc'}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Markdown导出成功', 'success');
+  } catch (err) {
+    showToast('导出失败: ' + err.message, 'error');
+  }
+}
+
 // =============================================
 //  Event Listeners
 // =============================================
@@ -753,6 +773,7 @@ function setupEventListeners() {
   $('#btn-dice').addEventListener('click', openDiceModal);
   $('#btn-export-pdf').addEventListener('click', handleExportPDF);
   $('#btn-export-html').addEventListener('click', handleExportHTML);
+  $('#btn-export-md').addEventListener('click', handleExportMarkdown);
   $('#btn-settings').addEventListener('click', openSettingsModal);
 
   // About modal integration

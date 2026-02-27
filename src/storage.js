@@ -329,3 +329,295 @@ ${doc.content}
 </body>
 </html>`;
 }
+
+/**
+ * Export a document as a well-formatted Markdown file
+ * Converts HTML content from WYSIWYG editor into clean Markdown
+ * @param {object} doc
+ * @returns {string} Markdown string
+ */
+export function exportToMarkdown(doc) {
+    const container = document.createElement('div');
+    container.innerHTML = doc.content || '';
+
+    // Build title
+    let md = '';
+    if (doc.title) {
+        md += `# ${doc.title}\n\n`;
+    }
+
+    md += convertNodeToMarkdown(container);
+
+    // Clean up: collapse 3+ newlines to 2
+    md = md.replace(/\n{3,}/g, '\n\n');
+    // Trim trailing whitespace on each line
+    md = md.split('\n').map(l => l.trimEnd()).join('\n');
+    // Ensure file ends with single newline
+    md = md.trimEnd() + '\n';
+    return md;
+}
+
+/**
+ * Recursively convert an HTML node to Markdown text
+ */
+function convertNodeToMarkdown(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return '';
+    }
+
+    const tag = node.tagName.toLowerCase();
+
+    // --- TRPG Special Blocks ---
+    if (node.classList.contains('trpg-note')) {
+        const inner = convertChildrenToMarkdown(node).trim();
+        return `\n> **📜 提示**\n>\n${inner.split('\n').map(l => `> ${l}`).join('\n')}\n\n`;
+    }
+    if (node.classList.contains('trpg-warning')) {
+        const inner = convertChildrenToMarkdown(node).trim();
+        return `\n> **⚠️ 警告**\n>\n${inner.split('\n').map(l => `> ${l}`).join('\n')}\n\n`;
+    }
+    if (node.classList.contains('trpg-stat-block')) {
+        return convertStatBlock(node);
+    }
+    if (node.classList.contains('trpg-coc-stat-block')) {
+        return convertStatBlock(node);
+    }
+    if (node.classList.contains('trpg-spell-card')) {
+        return convertCardBlock(node, '🔮 法术');
+    }
+    if (node.classList.contains('trpg-coc-spell-card')) {
+        return convertCardBlock(node, '📖 COC法术');
+    }
+    if (node.classList.contains('trpg-item-card')) {
+        return convertCardBlock(node, '🛡️ 物品');
+    }
+    if (node.classList.contains('trpg-generic-block')) {
+        const inner = convertChildrenToMarkdown(node).trim();
+        return `\n${inner}\n\n`;
+    }
+
+    // --- Inline dice ---
+    if (node.classList.contains('dice-inline')) {
+        const formula = node.dataset.dice || node.textContent;
+        return `\`🎲${formula}\``;
+    }
+
+    // --- Page break ---
+    if (node.classList.contains('page-break')) {
+        return '\n\n---\n*\\[分页\\]*\n\n---\n\n';
+    }
+
+    // --- Standard block elements ---
+    switch (tag) {
+        case 'h1': return `\n# ${convertChildrenToMarkdown(node).trim()}\n\n`;
+        case 'h2': return `\n## ${convertChildrenToMarkdown(node).trim()}\n\n`;
+        case 'h3': return `\n### ${convertChildrenToMarkdown(node).trim()}\n\n`;
+        case 'h4': return `\n#### ${convertChildrenToMarkdown(node).trim()}\n\n`;
+        case 'h5': return `\n##### ${convertChildrenToMarkdown(node).trim()}\n\n`;
+        case 'h6': return `\n###### ${convertChildrenToMarkdown(node).trim()}\n\n`;
+
+        case 'p': {
+            const inner = convertChildrenToMarkdown(node).trim();
+            if (!inner) return '\n';
+            return `\n${inner}\n\n`;
+        }
+
+        case 'br':
+            return '  \n';
+
+        case 'hr':
+            return '\n---\n\n';
+
+        case 'strong':
+        case 'b': {
+            const inner = convertChildrenToMarkdown(node);
+            return `**${inner.trim()}**`;
+        }
+
+        case 'em':
+        case 'i': {
+            const inner = convertChildrenToMarkdown(node);
+            return `*${inner.trim()}*`;
+        }
+
+        case 'u': {
+            const inner = convertChildrenToMarkdown(node);
+            return `<u>${inner}</u>`;
+        }
+
+        case 'del':
+        case 's':
+        case 'strike': {
+            const inner = convertChildrenToMarkdown(node);
+            return `~~${inner.trim()}~~`;
+        }
+
+        case 'code': {
+            return `\`${node.textContent}\``;
+        }
+
+        case 'pre': {
+            const codeEl = node.querySelector('code');
+            const text = codeEl ? codeEl.textContent : node.textContent;
+            return `\n\`\`\`\n${text}\n\`\`\`\n\n`;
+        }
+
+        case 'blockquote': {
+            const inner = convertChildrenToMarkdown(node).trim();
+            return '\n' + inner.split('\n').map(l => `> ${l}`).join('\n') + '\n\n';
+        }
+
+        case 'a': {
+            const href = node.getAttribute('href') || '';
+            const text = convertChildrenToMarkdown(node);
+            return `[${text.trim()}](${href})`;
+        }
+
+        case 'img': {
+            const src = node.getAttribute('src') || '';
+            const alt = node.getAttribute('alt') || '图片';
+            // Skip base64 images in Markdown (too long), just note them
+            if (src.startsWith('data:')) {
+                return `![${alt}](嵌入图片)`;
+            }
+            return `![${alt}](${src})`;
+        }
+
+        case 'ul':
+            return '\n' + convertListItems(node, 'ul') + '\n';
+
+        case 'ol':
+            return '\n' + convertListItems(node, 'ol') + '\n';
+
+        case 'li': {
+            const inner = convertChildrenToMarkdown(node).trim();
+            return inner;
+        }
+
+        case 'table':
+            return '\n' + convertTableToMarkdown(node) + '\n';
+
+        case 'div': {
+            // Generic div — just convert children
+            return convertChildrenToMarkdown(node);
+        }
+
+        case 'span': {
+            // Check for dice-inline (already handled above by class)
+            return convertChildrenToMarkdown(node);
+        }
+
+        case 'font': {
+            return convertChildrenToMarkdown(node);
+        }
+
+        default:
+            return convertChildrenToMarkdown(node);
+    }
+}
+
+function convertChildrenToMarkdown(node) {
+    let out = '';
+    for (const child of node.childNodes) {
+        out += convertNodeToMarkdown(child);
+    }
+    return out;
+}
+
+/**
+ * Convert <ul> or <ol> list items to Markdown
+ */
+function convertListItems(listNode, type, depth = 0) {
+    const indent = '  '.repeat(depth);
+    let out = '';
+    let idx = 1;
+    for (const child of listNode.children) {
+        if (child.tagName.toLowerCase() === 'li') {
+            const prefix = type === 'ol' ? `${idx}. ` : '- ';
+            // Check for nested lists inside li
+            const nestedUl = child.querySelector(':scope > ul');
+            const nestedOl = child.querySelector(':scope > ol');
+            // Get text content excluding nested lists
+            let innerText = '';
+            for (const liChild of child.childNodes) {
+                if (liChild.nodeType === Node.ELEMENT_NODE) {
+                    const t = liChild.tagName.toLowerCase();
+                    if (t === 'ul' || t === 'ol') continue;
+                }
+                innerText += convertNodeToMarkdown(liChild);
+            }
+            out += `${indent}${prefix}${innerText.trim()}\n`;
+            if (nestedUl) {
+                out += convertListItems(nestedUl, 'ul', depth + 1);
+            }
+            if (nestedOl) {
+                out += convertListItems(nestedOl, 'ol', depth + 1);
+            }
+            idx++;
+        }
+    }
+    return out;
+}
+
+/**
+ * Convert an HTML <table> to Markdown table format
+ */
+function convertTableToMarkdown(tableNode) {
+    const rows = [];
+    const allTr = tableNode.querySelectorAll('tr');
+
+    for (const tr of allTr) {
+        const cells = [];
+        for (const cell of tr.children) {
+            if (cell.tagName === 'TH' || cell.tagName === 'TD') {
+                cells.push(convertChildrenToMarkdown(cell).trim().replace(/\|/g, '\\|'));
+            }
+        }
+        rows.push(cells);
+    }
+
+    if (rows.length === 0) return '';
+
+    // Determine column widths
+    const colCount = Math.max(...rows.map(r => r.length));
+
+    // Normalize rows to have the same number of columns
+    for (const row of rows) {
+        while (row.length < colCount) row.push('');
+    }
+
+    // Build table
+    let out = '';
+    const header = rows[0];
+    out += '| ' + header.join(' | ') + ' |\n';
+    out += '| ' + header.map(() => '---').join(' | ') + ' |\n';
+    for (let i = 1; i < rows.length; i++) {
+        out += '| ' + rows[i].join(' | ') + ' |\n';
+    }
+
+    return out;
+}
+
+/**
+ * Convert a TRPG stat block to Markdown
+ */
+function convertStatBlock(node) {
+    let out = '\n---\n\n';
+    out += convertChildrenToMarkdown(node).trim();
+    out += '\n\n---\n\n';
+    return out;
+}
+
+/**
+ * Convert a TRPG card block (spell/item) to Markdown
+ */
+function convertCardBlock(node, prefix) {
+    let out = '\n---\n\n';
+    const inner = convertChildrenToMarkdown(node).trim();
+    out += inner;
+    out += '\n\n---\n\n';
+    return out;
+}
