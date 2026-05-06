@@ -28,7 +28,12 @@ import {
   loadPreferences,
   savePreferences,
   exportToHTML,
-  exportToMarkdown
+  exportToMarkdown,
+  exportToJSON,
+  exportToTXT,
+  importFromJSON,
+  importFromMarkdown,
+  importFromTXT
 } from './storage.js';
 
 // =============================================
@@ -712,6 +717,77 @@ function handleExportMarkdown() {
   }
 }
 
+async function handleExportJSON() {
+  saveCurrentToMemory();
+  const file = state.openFiles[state.activeFileIndex];
+  if (!file) return;
+  try {
+    const jsonStr = exportToJSON(file.doc);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${file.doc.title || 'trpg-doc'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('JSON导出成功', 'success');
+  } catch (err) {
+    showToast('导出失败: ' + err.message, 'error');
+  }
+}
+
+async function handleExportTXT() {
+  saveCurrentToMemory();
+  const file = state.openFiles[state.activeFileIndex];
+  if (!file) return;
+  try {
+    const txtStr = exportToTXT(file.doc);
+    const blob = new Blob([txtStr], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${file.doc.title || 'trpg-doc'}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('TXT导出成功', 'success');
+  } catch (err) {
+    showToast('导出失败: ' + err.message, 'error');
+  }
+}
+
+async function handleImportFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const ext = file.name.split('.').pop().toLowerCase();
+  const text = await file.text();
+  const title = file.name.replace(/\.[^/.]+$/, "");
+  
+  try {
+    let doc;
+    if (ext === 'json') {
+      doc = await importFromJSON(text);
+    } else if (ext === 'md') {
+      doc = await importFromMarkdown(text, title);
+    } else if (ext === 'txt') {
+      doc = await importFromTXT(text, title);
+    } else {
+      throw new Error('不支持的文件格式');
+    }
+    
+    state.openFiles.push({ id: doc.id, doc, unsaved: false });
+    state.activeFileIndex = state.openFiles.length - 1;
+    loadActiveFile();
+    renderFileTabs();
+    showToast('导入成功', 'success');
+  } catch (err) {
+    showToast('导入失败: ' + err.message, 'error');
+  }
+  
+  // reset input
+  e.target.value = '';
+}
+
 // =============================================
 //  Event Listeners
 // =============================================
@@ -771,9 +847,40 @@ function setupEventListeners() {
   });
   $('#btn-new-file').addEventListener('click', () => createNewFile());
   $('#btn-dice').addEventListener('click', openDiceModal);
-  $('#btn-export-pdf').addEventListener('click', handleExportPDF);
-  $('#btn-export-html').addEventListener('click', handleExportHTML);
-  $('#btn-export-md').addEventListener('click', handleExportMarkdown);
+  
+  const exportDropdown = $('#export-dropdown');
+  const exportMenu = exportDropdown?.querySelector('.dropdown-menu');
+  if (exportDropdown && exportMenu) {
+    $('#btn-export-menu').addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportMenu.classList.toggle('hidden');
+    });
+    
+    exportMenu.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const type = btn.dataset.export;
+      if (type === 'pdf') handleExportPDF();
+      if (type === 'html') handleExportHTML();
+      if (type === 'md') handleExportMarkdown();
+      if (type === 'json') handleExportJSON();
+      if (type === 'txt') handleExportTXT();
+      exportMenu.classList.add('hidden');
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!exportDropdown.contains(e.target)) {
+        exportMenu.classList.add('hidden');
+      }
+    });
+  }
+
+  const btnImportDoc = $('#btn-import-doc');
+  const fileImportDoc = $('#file-import-doc');
+  if (btnImportDoc && fileImportDoc) {
+    btnImportDoc.addEventListener('click', () => fileImportDoc.click());
+    fileImportDoc.addEventListener('change', handleImportFile);
+  }
   $('#btn-settings').addEventListener('click', openSettingsModal);
 
   // About modal integration

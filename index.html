@@ -42,15 +42,22 @@
         <button class="icon-btn" id="btn-dice" title="骰子工具">
           <span class="material-symbols-rounded">casino</span>
         </button>
-        <button class="icon-btn" id="btn-export-pdf" title="导出PDF">
-          <span class="material-symbols-rounded">picture_as_pdf</span>
+        <div class="dropdown" id="export-dropdown">
+          <button class="icon-btn" id="btn-export-menu" title="导出文档">
+            <span class="material-symbols-rounded">download</span>
+          </button>
+          <div class="dropdown-menu hidden">
+            <button data-export="pdf">📄 导出 PDF</button>
+            <button data-export="html">🌐 导出 HTML</button>
+            <button data-export="md">📝 导出 Markdown (.md)</button>
+            <button data-export="json">🗂 导出 JSON（可还原）</button>
+            <button data-export="txt">📃 导出纯文本 (.txt)</button>
+          </div>
+        </div>
+        <button class="icon-btn" id="btn-import-doc" title="导入文档 (MD/JSON/TXT)">
+          <span class="material-symbols-rounded">upload_file</span>
         </button>
-        <button class="icon-btn" id="btn-export-html" title="导出HTML">
-          <span class="material-symbols-rounded">code</span>
-        </button>
-        <button class="icon-btn" id="btn-export-md" title="导出Markdown">
-          <span class="material-symbols-rounded">description</span>
-        </button>
+        <input type="file" id="file-import-doc" accept=".md,.json,.txt" style="display:none">
         <button class="icon-btn" id="btn-settings" title="设置">
           <span class="material-symbols-rounded">settings</span>
         </button>

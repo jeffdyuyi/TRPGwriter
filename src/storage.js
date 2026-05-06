@@ -621,3 +621,152 @@ function convertCardBlock(node, prefix) {
     out += '\n\n---\n\n';
     return out;
 }
+
+/**
+ * Export a document as JSON
+ */
+export function exportToJSON(doc) {
+    const exportData = {
+        trpgWriterExportVersion: "1.0",
+        id: doc.id,
+        title: doc.title,
+        content: doc.content,
+        pageStyle: doc.pageStyle,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt
+    };
+    return JSON.stringify(exportData, null, 2);
+}
+
+/**
+ * Export a document as pure TXT
+ */
+export function exportToTXT(doc) {
+    const container = document.createElement('div');
+    container.innerHTML = doc.content || '';
+
+    let txt = '';
+    if (doc.title) {
+        txt += `${doc.title}\n${'='.repeat(doc.title.length * 2)}\n\n`;
+    }
+
+    function extractText(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent;
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+            return '';
+        }
+
+        const tag = node.tagName.toLowerCase();
+        
+        if (tag === 'br') return '\n';
+        if (tag === 'hr') return '\n---\n\n';
+
+        let inner = '';
+        for (const child of node.childNodes) {
+            inner += extractText(child);
+        }
+
+        if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)) {
+            return `\n${inner.trim()}\n${'-'.repeat(inner.trim().length)}\n\n`;
+        }
+        if (['p', 'div', 'li', 'blockquote'].includes(tag)) {
+            return `\n${inner.trim()}\n`;
+        }
+        
+        return inner;
+    }
+
+    txt += extractText(container);
+
+    // Clean up excessive newlines
+    txt = txt.replace(/\n{3,}/g, '\n\n').trim() + '\n';
+    return txt;
+}
+
+/**
+ * Import a document from JSON
+ */
+export async function importFromJSON(jsonString) {
+    try {
+        const data = JSON.parse(jsonString);
+        if (!data.trpgWriterExportVersion) {
+            throw new Error('无效的文件格式: 缺少版本标识');
+        }
+        
+        // Generate new ID to avoid conflicts
+        const doc = {
+            id: generateId(),
+            title: data.title || '导入的文档',
+            content: data.content || '',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            pageStyle: data.pageStyle || 'parchment'
+        };
+        
+        await saveDocument(doc);
+        return doc;
+    } catch (e) {
+        throw new Error('JSON 解析失败: ' + e.message);
+    }
+}
+
+/**
+ * Import a document from Markdown
+ */
+export async function importFromMarkdown(mdText, title = '导入的Markdown') {
+    // Simple MD to HTML conversion for basic text
+    // A robust solution would use a library like marked.js
+    let html = mdText
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+        .replace(/\*(.*)\*/gim, '<em>$1</em>')
+        .replace(/!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='$2' />")
+        .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
+        .replace(/\n$/gim, '<br />');
+
+    // Split by double newline and wrap in <p>
+    html = html.split('\n\n').map(p => {
+        if (!p.startsWith('<h') && !p.startsWith('<blockquote') && !p.startsWith('<img') && p.trim().length > 0) {
+            return `<p>${p}</p>`;
+        }
+        return p;
+    }).join('\n');
+
+    const doc = {
+        id: generateId(),
+        title: title,
+        content: html,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        pageStyle: 'parchment'
+    };
+    
+    await saveDocument(doc);
+    return doc;
+}
+
+/**
+ * Import a document from TXT
+ */
+export async function importFromTXT(text, title = '导入的文本文档') {
+    const html = text.split(/\n\s*\n/).map(para => {
+        return `<p>${para.replace(/\n/g, '<br/>')}</p>`;
+    }).join('\n');
+
+    const doc = {
+        id: generateId(),
+        title: title,
+        content: html,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        pageStyle: 'parchment'
+    };
+    
+    await saveDocument(doc);
+    return doc;
+}
