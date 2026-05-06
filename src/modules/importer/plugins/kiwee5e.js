@@ -29,6 +29,7 @@ export class Kiwee5ePlugin {
         if (this.searchIndex) return;
         try {
             const response = await fetch(`${BASE_URL}/search/index.json`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             this.searchIndex = data.x;
         } catch (e) {
@@ -50,6 +51,7 @@ export class Kiwee5ePlugin {
 
         try {
             const res = await fetch(`${BASE_URL}${path}`);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
             this.fileIndices[type] = data;
             return data;
@@ -65,10 +67,10 @@ export class Kiwee5ePlugin {
         const term = query ? query.toLowerCase() : '';
         const isBrowse = !term;
 
+        const allowedCategories = SEARCH_TYPE_MAP[type] || [];
+
         let results = this.searchIndex.filter(item => {
-            if (type === 'monster' && item.c !== 1) return false;
-            if (type === 'spell' && item.c !== 3) return false; // B10: 仅允许法术类别
-            if (type === 'item' && (item.c === 1 || item.c === 3)) return false;
+            if (!allowedCategories.includes(item.c)) return false;
 
             if (isBrowse) return true;
 
@@ -132,7 +134,9 @@ export class Kiwee5ePlugin {
                 url = `${BASE_URL}/data/items/${filename}`;
             }
 
+
             const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             fileData = await res.json();
             this.dataCache.set(cacheKey, fileData);
         }
