@@ -12,6 +12,7 @@
   --bg-tertiary: #ebeae5;     /* Cursor Surface 300 */
   --bg-surface: #ffffff;
   --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-paper: #ffffff;        /* Light paper background */
   
   /* Text */
   --text-primary: #1d1d1f;    /* Apple Near Black */
@@ -49,18 +50,21 @@
 
 [data-theme="dark"] {
   --bg-primary: #000000;      /* Apple Pure Black */
-  --bg-secondary: #1d1d1f;    /* Apple Near Black */
-  --bg-tertiary: #272729;     /* Apple Dark Surface 1 */
-  --bg-surface: #2a2a2d;      /* Apple Dark Surface 4 */
+  --bg-secondary: #1c1c1e;    /* Apple Near Black */
+  --bg-tertiary: #2c2c2e;     /* Apple Dark Surface */
+  --bg-surface: #3a3a3c;
   --bg-glass: rgba(0, 0, 0, 0.75);
   
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.8);
-  --text-muted: rgba(255, 255, 255, 0.48);
+  --bg-paper: #1c1c1e;        /* Dark paper background */
   
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.2);
-  --shadow: rgba(0, 0, 0, 0.5);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.4);
+  --text-plum: #f2f1ed;       /* Light cream text for dark mode */
+  
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.24);
+  --shadow: rgba(0, 0, 0, 0.6);
 }
 
 /* ---- Reset ---- */
@@ -467,7 +471,7 @@ body {
 }
 
 .status-divider {
-  color: var(--border-light);
+  color: var(--border);
   font-size: 10px;
 }
 
@@ -542,7 +546,7 @@ body {
   position: absolute;
   left: 0;
   width: 100%;
-  background-color: #ffffff;
+  background-color: var(--bg-paper);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-apple);
 }
@@ -768,7 +772,7 @@ body {
 }
 
 .trpg-stat-block {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 24px;
@@ -916,25 +920,26 @@ body {
 }
 
 .trpg-spell-card {
-  background: #f8f0ff;
-  border: 1px solid #9b59b6;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-strong);
   border-top: 3px solid #9b59b6;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 14px 18px;
   margin: 12px 0;
 }
 
 .trpg-spell-card h4 {
-  color: #6c3483;
+  color: #9b59b6;
   margin: 0 0 6px;
   font-style: normal;
   font-size: 1.15em;
   border: none;
+  font-weight: 700;
 }
 
 .trpg-spell-card .spell-meta {
   font-size: 0.85em;
-  color: #7d3c98;
+  color: var(--text-secondary);
   font-style: italic;
   margin-bottom: 6px;
 }
@@ -942,32 +947,34 @@ body {
 .trpg-spell-card .spell-props {
   font-size: 0.88em;
   margin-bottom: 6px;
+  color: var(--text-primary);
 }
 
 .trpg-spell-card .spell-props strong {
-  color: #6c3483;
+  color: #9b59b6;
 }
 
 .trpg-item-card {
-  background: #f8fff5;
-  border: 1px solid #27ae60;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-strong);
   border-top: 3px solid #27ae60;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 14px 18px;
   margin: 12px 0;
 }
 
 .trpg-item-card h4 {
-  color: #1e8449;
+  color: #27ae60;
   margin: 0 0 6px;
   font-style: normal;
   font-size: 1.15em;
   border: none;
+  font-weight: 700;
 }
 
 .trpg-item-card .item-meta {
   font-size: 0.85em;
-  color: #27ae60;
+  color: var(--text-secondary);
   font-style: italic;
   margin-bottom: 6px;
 }
@@ -1120,7 +1127,7 @@ body {
 
 /* ---- Page style variants ---- */
 .page-modern .wysiwyg-editor {
-  background: #ffffff;
+  background: transparent;
   font-family: 'Noto Sans SC', sans-serif;
 }
 
@@ -1128,7 +1135,7 @@ body {
 .page-modern .wysiwyg-editor h2,
 .page-modern .wysiwyg-editor h3,
 .page-modern .wysiwyg-editor h4 {
-  color: #2c3e50;
+  color: var(--text-primary);
   font-family: 'Noto Sans SC', sans-serif;
 }
 
@@ -1166,7 +1173,7 @@ body {
 }
 
 .page-modern .page-bg-card {
-  background-color: #ffffff;
+  background-color: var(--bg-paper);
 }
 
 .page-dark-fantasy .wysiwyg-editor {
