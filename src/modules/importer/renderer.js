@@ -74,21 +74,23 @@ export const CommonRenderer = {
         const reactions = parseIfString(data.reaction);
         const legendary = parseIfString(data.legendary);
 
-        return `<div class="trpg-stat-block" contenteditable="true">
-    <h3>${data.name} <small>(${data.ENG_name || ''})</small></h3>
-    <p class="stat-subtitle"><em>${SIZE_MAP[data.size] || data.size} ${typeStr}，${align}</em></p>
-    <p class="stat-line"><strong>护甲等级</strong> ${ac}</p>
-    <p class="stat-line"><strong>生命值</strong> ${hp} ${hpFormula ? `(${hpFormula})` : ''}</p>
-    <p class="stat-line"><strong>速度</strong> ${speed}</p>
-    ${statsHtml}
-    <p class="stat-line"><strong>感官</strong> 被动感知 ${data.passive || 10}</p>
-    <p class="stat-line"><strong>语言</strong> ${Array.isArray(data.languages) ? data.languages.join(', ') : (data.languages || '—')}</p>
-    <p class="stat-line"><strong>挑战等级</strong> ${data.cr || '—'}</p>
+        return `<div class="trpg-stat-block" contenteditable="false">
+    <h3 contenteditable="true">${data.name} <small>(${data.ENG_name || ''})</small></h3>
+    <p class="stat-subtitle" contenteditable="true"><em>${SIZE_MAP[data.size] || data.size} ${typeStr}，${align}</em></p>
+    <p class="stat-line" contenteditable="true"><strong>护甲等级</strong> ${ac}</p>
+    <p class="stat-line" contenteditable="true"><strong>生命值</strong> ${hp} ${hpFormula ? `(${hpFormula})` : ''}</p>
+    <p class="stat-line" contenteditable="true"><strong>速度</strong> ${speed}</p>
+    <div contenteditable="true">${statsHtml}</div>
+    <p class="stat-line" contenteditable="true"><strong>感官</strong> 被动感知 ${data.passive || 10}</p>
+    <p class="stat-line" contenteditable="true"><strong>语言</strong> ${Array.isArray(data.languages) ? data.languages.join(', ') : (data.languages || '—')}</p>
+    <p class="stat-line" contenteditable="true"><strong>挑战等级</strong> ${data.cr || '—'}</p>
     <hr>
-    ${Array.isArray(traits) ? renderEntries(traits) : (traits || '')}
-    ${actions ? `<h4>动作</h4>${Array.isArray(actions) ? renderEntries(actions) : actions}` : ''}
-    ${reactions ? `<h4>反应</h4>${Array.isArray(reactions) ? renderEntries(reactions) : reactions}` : ''}
-    ${legendary ? `<h4>传奇动作</h4>${Array.isArray(legendary) ? renderEntries(legendary) : legendary}` : ''}
+    <div contenteditable="true">
+        ${Array.isArray(traits) ? renderEntries(traits) : (traits || '')}
+        ${actions ? `<h4>动作</h4>${Array.isArray(actions) ? renderEntries(actions) : actions}` : ''}
+        ${reactions ? `<h4>反应</h4>${Array.isArray(reactions) ? renderEntries(reactions) : reactions}` : ''}
+        ${legendary ? `<h4>传奇动作</h4>${Array.isArray(legendary) ? renderEntries(legendary) : legendary}` : ''}
+    </div>
     </div>`;
     },
 
@@ -152,14 +154,14 @@ export const CommonRenderer = {
             }
         }
 
-        return `<div class="trpg-spell-card" contenteditable="true">
-      <h4>${data.name} <small>(${data.ENG_name || ''})</small></h4>
-      <p class="spell-meta">${meta}</p>
-      <p class="spell-props"><strong>施法时间：</strong>${timeStr}</p>
-      <p class="spell-props"><strong>施法距离：</strong>${rangeStr}</p>
-      <p class="spell-props"><strong>法术成分：</strong>${comps}</p>
-      <p class="spell-props"><strong>持续时间：</strong>${dur}</p>
-      <div class="spell-content">${entries}</div>
+        return `<div class="trpg-spell-card" contenteditable="false">
+      <h4 contenteditable="true">${data.name} <small>(${data.ENG_name || ''})</small></h4>
+      <p class="spell-meta" contenteditable="true">${meta}</p>
+      <p class="spell-props" contenteditable="true"><strong>施法时间：</strong>${timeStr}</p>
+      <p class="spell-props" contenteditable="true"><strong>施法距离：</strong>${rangeStr}</p>
+      <p class="spell-props" contenteditable="true"><strong>法术成分：</strong>${comps}</p>
+      <p class="spell-props" contenteditable="true"><strong>持续时间：</strong>${dur}</p>
+      <div class="spell-content" contenteditable="true">${entries}</div>
     </div>`;
     },
 
@@ -189,10 +191,10 @@ export const CommonRenderer = {
             }
         }
 
-        return `<div class="trpg-item-card" contenteditable="true">
-      <h4>${data.name} <small>(${data.ENG_name || ''})</small></h4>
-      <p class="item-meta">${type}，${rarity}${attune}</p>
-      <div class="item-content">${entries}</div>
+        return `<div class="trpg-item-card" contenteditable="false">
+      <h4 contenteditable="true">${data.name} <small>(${data.ENG_name || ''})</small></h4>
+      <p class="item-meta" contenteditable="true">${type}，${rarity}${attune}</p>
+      <div class="item-content" contenteditable="true">${entries}</div>
     </div>`;
     }
 };

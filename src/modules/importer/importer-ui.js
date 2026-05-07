@@ -160,15 +160,15 @@ export function initImporterUI(importer) {
         const editor = document.getElementById('editor');
         editor.focus();
 
+        // Restore last range if available to prevent inserting at the top
+        if (currentState.lastRange) {
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(currentState.lastRange);
+        }
+
         // Use execCommand for undo support
-        // We might want to wrap it in a container?
-        // The data likely already has a wrapper (e.g. .trpg-spell-card)
-
         // Note: insertHTML might insert at cursor.
-        // If cursor is lost, it might insert at beginning or fail.
-        // openModal should ideally save cursor range, but if clicking around, it's lost.
-        // We can append to end if no selection?
-
         document.execCommand('insertHTML', false, currentState.previewHtml);
         document.execCommand('insertHTML', false, '<p><br></p>'); // Add spacing
 

@@ -722,9 +722,30 @@ body {
 .trpg-spell-card,
 .trpg-item-card,
 .trpg-note,
-.trpg-warning {
+.trpg-warning,
+.trpg-generic-block,
+.trpg-coc-stat-block,
+.trpg-coc-spell-card,
+.trpg-dh-enemy,
+.trpg-dh-scene {
   break-inside: avoid;
   page-break-inside: avoid;
+  transition: box-shadow var(--transition), outline var(--transition);
+  cursor: default;
+}
+
+.trpg-stat-block:hover,
+.trpg-spell-card:hover,
+.trpg-item-card:hover,
+.trpg-note:hover,
+.trpg-warning:hover,
+.trpg-generic-block:hover,
+.trpg-coc-stat-block:hover,
+.trpg-coc-spell-card:hover,
+.trpg-dh-enemy:hover,
+.trpg-dh-scene:hover {
+  outline: 1px solid var(--accent-subtle);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ---- TRPG Components (inside editor) ---- */

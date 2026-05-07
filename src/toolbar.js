@@ -6,122 +6,138 @@
 // ---- TRPG Element Templates ----
 
 const TEMPLATES = {
-    note: `<div class="trpg-note" contenteditable="true"><p>在此输入提示内容…</p></div>`,
+    note: `<div class="trpg-note" contenteditable="false"><div contenteditable="true"><p>在此输入提示内容…</p></div></div>`,
 
-    warning: `<div class="trpg-warning" contenteditable="true"><p>在此输入警告内容…</p></div>`,
+    warning: `<div class="trpg-warning" contenteditable="false"><div contenteditable="true"><p>在此输入警告内容…</p></div></div>`,
 
-    'generic-block': `<div class="trpg-generic-block" contenteditable="true">
-    <h3 class="generic-title">通用专长或物品名称 <span style="font-family: Arial, sans-serif; font-size:0.85em; font-weight: normal;">English Name</span></h3>
-    <hr class="generic-divider">
-    <p class="generic-subtitle"><em>先决条件 / 稀有度说明（支持斜体和颜色）</em></p>
-    <p class="generic-body">在此处输入第一段详细描述。你可以在这里详细阐述物品的功能机制、专长的具体加成、或是NPC的背景信息和特殊能力。只要是无边框的泛用性说明都可以使用此区块。</p>
-    <p class="generic-body">这是第二段落。你可以继续按下回车键以产生更多具备标准段落缩进的独立文本行，用来记录额外的规则说明。</p>
+    'generic-block': `<div class="trpg-generic-block" contenteditable="false">
+    <div contenteditable="true">
+        <h3 class="generic-title">通用专长或物品名称 <span style="font-family: Arial, sans-serif; font-size:0.85em; font-weight: normal;">English Name</span></h3>
+        <hr class="generic-divider">
+        <p class="generic-subtitle"><em>先决条件 / 稀有度说明（支持斜体和颜色）</em></p>
+        <p class="generic-body">在此处输入第一段详细描述。你可以在这里详细阐述物品的功能机制、专长的具体加成、或是NPC的背景信息和特殊能力。只要是无边框的泛用性说明都可以使用此区块。</p>
+        <p class="generic-body">这是第二段落。你可以继续按下回车键以产生更多具备标准段落缩进的独立文本行，用来记录额外的规则说明。</p>
+    </div>
   </div>`,
 
-    'stat-block': `<div class="trpg-stat-block" contenteditable="true">
-    <h3>怪物名称</h3>
-    <p class="stat-subtitle"><em>中型 人形生物，任意阵营</em></p>
-    <p class="stat-line"><strong>护甲等级</strong> 12</p>
-    <p class="stat-line"><strong>生命值</strong> 22 (5d8)</p>
-    <p class="stat-line"><strong>速度</strong> 30尺</p>
-    <table><thead><tr><th>力量</th><th>敏捷</th><th>体质</th><th>智力</th><th>感知</th><th>魅力</th></tr></thead>
-    <tbody><tr><td>10(+0)</td><td>14(+2)</td><td>10(+0)</td><td>10(+0)</td><td>12(+1)</td><td>10(+0)</td></tr></tbody></table>
-    <p class="stat-line"><strong>感官</strong> 被动感知 11</p>
-    <p class="stat-line"><strong>语言</strong> 通用语</p>
-    <p class="stat-line"><strong>挑战等级</strong> 1 (200 XP)</p>
-    <p><strong><em>特性名称。</em></strong> 特性描述…</p>
-    <h4>动作</h4>
-    <p><strong><em>攻击名称。</em></strong> <em>近战武器攻击：</em>命中+4，触及5尺，单一目标。命中：5 (1d6+2) 挥砍伤害。</p>
+    'stat-block': `<div class="trpg-stat-block" contenteditable="false">
+    <div contenteditable="true">
+        <h3>怪物名称</h3>
+        <p class="stat-subtitle"><em>中型 人形生物，任意阵营</em></p>
+        <p class="stat-line"><strong>护甲等级</strong> 12</p>
+        <p class="stat-line"><strong>生命值</strong> 22 (5d8)</p>
+        <p class="stat-line"><strong>速度</strong> 30尺</p>
+        <table><thead><tr><th>力量</th><th>敏捷</th><th>体质</th><th>智力</th><th>感知</th><th>魅力</th></tr></thead>
+        <tbody><tr><td>10(+0)</td><td>14(+2)</td><td>10(+0)</td><td>10(+0)</td><td>12(+1)</td><td>10(+0)</td></tr></tbody></table>
+        <p class="stat-line"><strong>感官</strong> 被动感知 11</p>
+        <p class="stat-line"><strong>语言</strong> 通用语</p>
+        <p class="stat-line"><strong>挑战等级</strong> 1 (200 XP)</p>
+        <p><strong><em>特性名称。</em></strong> 特性描述…</p>
+        <h4>动作</h4>
+        <p><strong><em>攻击名称。</em></strong> <em>近战武器攻击：</em>命中+4，触及5尺，单一目标。命中：5 (1d6+2) 挥砍伤害。</p>
+    </div>
   </div>`,
 
-    'coc-stat': `<div class="trpg-coc-stat-block" contenteditable="true">
-    <h3>拜亚基，星骏</h3>
-    <table class="coc-stat-table">
-      <thead><tr><th>属性</th><th>平均</th><th>掷骰</th></tr></thead>
-      <tbody>
-        <tr><td>STR</td><td>90</td><td>(5D6×5)</td></tr>
-        <tr><td>CON</td><td>50</td><td>(3D6×5)</td></tr>
-        <tr><td>SIZ</td><td>90</td><td>(5D6×5)</td></tr>
-        <tr><td>DEX</td><td>67</td><td>(3D6+3×5)</td></tr>
-        <tr><td>INT</td><td>50</td><td>(3D6×5)</td></tr>
-        <tr><td>POW</td><td>50</td><td>(3D6×5)</td></tr>
-      </tbody>
-    </table>
-    <p class="stat-line">HP：14</p>
-    <p class="stat-line">平均伤害加值：1D6</p>
-    <p class="stat-line">平均体格：2</p>
-    <p class="stat-line">平均魔法值：10</p>
-    <p class="stat-line">移动：5/16 飞行</p>
-    
-    <h4>攻击</h4>
-    <p class="stat-line">每回合攻击：2次</p>
-    <p class="stat-indent">战斗方式：拜亚基会用爪子攻击或撞击受害者，造成严重伤害</p>
-    <p class="stat-indent">格斗 55% (27/11)，伤害1D6+DB</p>
-    <p class="stat-indent">闪避 33% (16/6)</p>
-    <p class="stat-indent">护甲：2毛发与坚韧兽皮</p>
-    <p class="stat-indent">技能：聆听50%，侦查50%</p>
-    <p class="stat-indent">理智损失：直视拜亚基丧失1/1D6点理智。</p>
+    'coc-stat': `<div class="trpg-coc-stat-block" contenteditable="false">
+    <div contenteditable="true">
+        <h3>拜亚基，星骏</h3>
+        <table class="coc-stat-table">
+          <thead><tr><th>属性</th><th>平均</th><th>掷骰</th></tr></thead>
+          <tbody>
+            <tr><td>STR</td><td>90</td><td>(5D6×5)</td></tr>
+            <tr><td>CON</td><td>50</td><td>(3D6×5)</td></tr>
+            <tr><td>SIZ</td><td>90</td><td>(5D6×5)</td></tr>
+            <tr><td>DEX</td><td>67</td><td>(3D6+3×5)</td></tr>
+            <tr><td>INT</td><td>50</td><td>(3D6×5)</td></tr>
+            <tr><td>POW</td><td>50</td><td>(3D6×5)</td></tr>
+          </tbody>
+        </table>
+        <p class="stat-line">HP：14</p>
+        <p class="stat-line">平均伤害加值：1D6</p>
+        <p class="stat-line">平均体格：2</p>
+        <p class="stat-line">平均魔法值：10</p>
+        <p class="stat-line">移动：5/16 飞行</p>
+        
+        <h4>攻击</h4>
+        <p class="stat-line">每回合攻击：2次</p>
+        <p class="stat-indent">战斗方式：拜亚基会用爪子攻击或撞击受害者，造成严重伤害</p>
+        <p class="stat-indent">格斗 55% (27/11)，伤害1D6+DB</p>
+        <p class="stat-indent">闪避 33% (16/6)</p>
+        <p class="stat-indent">护甲：2毛发与坚韧兽皮</p>
+        <p class="stat-indent">技能：聆听50%，侦查50%</p>
+        <p class="stat-indent">理智损失：直视拜亚基丧失1/1D6点理智。</p>
+    </div>
   </div>`,
 
-    spell: `<div class="trpg-spell-card" contenteditable="true">
-    <h4>法术名称</h4>
-    <p class="spell-meta">X环 XXX（仪式）</p>
-    <p class="spell-props"><strong>施法时间：</strong>1 动作</p>
-    <p class="spell-props"><strong>施法距离：</strong>60尺</p>
-    <p class="spell-props"><strong>法术成分：</strong>V, S, M（材料描述）</p>
-    <p class="spell-props"><strong>持续时间：</strong>专注，至多1分钟</p>
-    <p>法术效果描述…</p>
+    spell: `<div class="trpg-spell-card" contenteditable="false">
+    <div contenteditable="true">
+        <h4>法术名称</h4>
+        <p class="spell-meta">X环 XXX（仪式）</p>
+        <p class="spell-props"><strong>施法时间：</strong>1 动作</p>
+        <p class="spell-props"><strong>施法距离：</strong>60尺</p>
+        <p class="spell-props"><strong>法术成分：</strong>V, S, M（材料描述）</p>
+        <p class="spell-props"><strong>持续时间：</strong>专注，至多1分钟</p>
+        <p>法术效果描述…</p>
+    </div>
   </div>`,
 
-    'coc-spell': `<div class="trpg-coc-spell-card" contenteditable="true">
-    <h3>尼约格萨紧握术</h3>
-    <p class="coc-spell-meta">消耗：1+点魔法值、等于该轮中伤害值的两倍；1D20点理智值</p>
-    <p class="coc-spell-meta">施法用时：即时</p>
-    <p class="coc-spell-desc">施法者须消耗1点魔法值启动法术，目标必须在能够交谈的距离之内。施法者须和目标进行一次POW对抗检定并胜出，法术才能生效。如果施法者胜出，目标会感觉似乎有一只巨手或者触手挤压着他的心脏，在法术生效期间每轮损失1D3点耐久值。在受到这种攻击时，目标会暂时瘫痪，好像心脏病发作了一样。如果某轮中累计伤害使得目标的耐久归零，目标的胸口将破裂炸开，他冒着热气的心脏会出现在施法者的手中。</p>
-    <p class="coc-spell-desc">法术每持续一轮，施法者就需要消耗两倍于（此轮中）耐久伤害的魔法值。施法者每轮都必须专心施法以维持效果，并且每轮都要和目标做一次POW对抗检定并胜出。如果施法者无法集中精力、或者目标POW抵抗成功，法术终止。已经造成的伤害仍保留。</p>
-    <p class="coc-spell-desc" style="text-indent: 0; padding-left: 2em;">别名：邪恶的扭绞、黑暗巫师的暗中暴怒、可怖之抓挠</p>
+    'coc-spell': `<div class="trpg-coc-spell-card" contenteditable="false">
+    <div contenteditable="true">
+        <h3>尼约格萨紧握术</h3>
+        <p class="coc-spell-meta">消耗：1+点魔法值、等于该轮中伤害值的两倍；1D20点理智值</p>
+        <p class="coc-spell-meta">施法用时：即时</p>
+        <p class="coc-spell-desc">施法者须消耗1点魔法值启动法术，目标必须在能够交谈的距离之内。施法者须和目标进行一次POW对抗检定并胜出，法术才能生效。如果施法者胜出，目标会感觉似乎有一只巨手或者触手挤压着他的心脏，在法术生效期间每轮损失1D3点耐久值。在受到这种攻击时，目标会暂时瘫痪，好像心脏病发作了一样。如果某轮中累计伤害使得目标的耐久归零，目标的胸口将破裂炸开，他冒着热气的心脏会出现在施法者的手中。</p>
+        <p class="coc-spell-desc">法术每持续一轮，施法者就需要消耗两倍于（此轮中）耐久伤害的魔法值。施法者每轮都必须专心施法以维持效果，并且每轮都要和目标做一次POW对抗检定并胜出。如果施法者无法集中精力、或者目标POW抵抗成功，法术终止。已经造成的伤害仍保留。</p>
+        <p class="coc-spell-desc" style="text-indent: 0; padding-left: 2em;">别名：邪恶的扭绞、黑暗巫师的暗中暴怒、可怖之抓挠</p>
+    </div>
   </div>`,
 
-    item: `<div class="trpg-item-card" contenteditable="true">
-    <h4>物品名称</h4>
-    <p class="item-meta">魔法物品，稀有（需同调）</p>
-    <p class="item-props"><strong>类型：</strong>武器（长剑）</p>
-    <p>物品描述和效果…</p>
+    item: `<div class="trpg-item-card" contenteditable="false">
+    <div contenteditable="true">
+        <h4>物品名称</h4>
+        <p class="item-meta">魔法物品，稀有（需同调）</p>
+        <p class="item-props"><strong>类型：</strong>武器（长剑）</p>
+        <p>物品描述和效果…</p>
+    </div>
   </div>`,
 
     'dice-inline': `<span class="dice-inline" data-dice="1d20" contenteditable="false">1d20</span>`,
 
-    'dh-enemy': `<div class="trpg-dh-enemy" contenteditable="true">
-    <h3>锯齿刀强盗</h3>
-    <p class="dh-meta">位阶1 标准</p>
-    <div class="dh-labeled-row"><span class="dh-label">动机/战术:</span> 逃跑、获利</div>
-    <div class="dh-labeled-row"><span class="dh-label">经历:</span> 盗贼+2</div>
-    <div class="dh-grid">
-      <div class="dh-grid-item"><span class="dh-grid-label">难度</span><span class="dh-grid-value">12</span></div>
-      <div class="dh-grid-item"><span class="dh-grid-label">阈值</span><span class="dh-grid-value">8/14</span></div>
-      <div class="dh-grid-item"><span class="dh-grid-label">生命</span><span class="dh-grid-value">5</span></div>
-      <div class="dh-grid-item"><span class="dh-grid-label">压力</span><span class="dh-grid-value">3</span></div>
+    'dh-enemy': `<div class="trpg-dh-enemy" contenteditable="false">
+    <div contenteditable="true">
+        <h3>锯齿刀强盗</h3>
+        <p class="dh-meta">位阶1 标准</p>
+        <div class="dh-labeled-row"><span class="dh-label">动机/战术:</span> 逃跑、获利</div>
+        <div class="dh-labeled-row"><span class="dh-label">经历:</span> 盗贼+2</div>
+        <div class="dh-grid">
+          <div class="dh-grid-item"><span class="dh-grid-label">难度</span><span class="dh-grid-value">12</span></div>
+          <div class="dh-grid-item"><span class="dh-grid-label">阈值</span><span class="dh-grid-value">8/14</span></div>
+          <div class="dh-grid-item"><span class="dh-grid-label">生命</span><span class="dh-grid-value">5</span></div>
+          <div class="dh-grid-item"><span class="dh-grid-label">压力</span><span class="dh-grid-value">3</span></div>
+        </div>
+        <div class="dh-attack-row">
+          <span><strong>攻击:</strong> +1</span>
+          <span><strong>匕首:</strong> 近战</span>
+          <span>1d8+1 物理</span>
+        </div>
+        <span class="dh-section-title">特性</span>
+        <div class="dh-trait"><span class="dh-trait-name">如履平地</span> 被动: 锯齿刀强盗爬起来和奔跑一样轻松。</div>
+        <div class="dh-trait"><span class="dh-trait-name">居高临下</span> 被动: 当锯齿刀强盗从一个目标上方进行普通攻击并成功时，其造成 1d10+1 的物理伤害而非普通伤害。</div>
     </div>
-    <div class="dh-attack-row">
-      <span><strong>攻击:</strong> +1</span>
-      <span><strong>匕首:</strong> 近战</span>
-      <span>1d8+1 物理</span>
-    </div>
-    <span class="dh-section-title">特性</span>
-    <div class="dh-trait"><span class="dh-trait-name">如履平地</span> 被动: 锯齿刀强盗爬起来和奔跑一样轻松。</div>
-    <div class="dh-trait"><span class="dh-trait-name">居高临下</span> 被动: 当锯齿刀强盗从一个目标上方进行普通攻击并成功时，其造成 1d10+1 的物理伤害而非普通伤害。</div>
   </div>`,
 
-    'dh-scene': `<div class="trpg-dh-scene" contenteditable="true">
-    <h3>汹涌河流</h3>
-    <div class="dh-en-title">Raging River</div>
-    <p class="dh-scene-meta">位阶1 险境 | 难度 10</p>
-    <p class="dh-desc">一条流速湍急、没有桥梁跨越的河流，水深足以冲走大多数人。</p>
-    <div class="dh-labeled-row"><span class="dh-label">趋向:</span> 阻隔通行、卷走措手不及的人、分隔两岸</div>
-    <div class="dh-labeled-row"><span class="dh-label">潜在敌人:</span> 野兽 (熊, 玻璃蛇), 锯齿刀强盗</div>
-    <span class="dh-section-title">特性</span>
-    <div class="dh-trait"><span class="dh-trait-name">危险渡河 Dangerous Crossing - 被动</span><br>• 穿越河流需要队伍完成一个进展计时 (4)。掷骰结果为恐惧失败的玩家角色会立即成为"暗流"动作的目标。<br><em>是否有玩家角色以前曾涉水渡过类似的河流？他们中是否有人害怕溺水？</em></div>
-    <div class="dh-trait"><span class="dh-trait-name">暗流 Undertow - 动作 [1 恐惧点]</span><br>• 花费 1 恐惧点将一名玩家角色卷入暗流。其必须进行一次敏捷反应掷骰。失败时，受到 1d6+1 点物理伤害。<br><em>这片水域是否存在掠食者？</em></div>
+    'dh-scene': `<div class="trpg-dh-scene" contenteditable="false">
+    <div contenteditable="true">
+        <h3>汹涌河流</h3>
+        <div class="dh-en-title">Raging River</div>
+        <p class="dh-scene-meta">位阶1 险境 | 难度 10</p>
+        <p class="dh-desc">一条流速湍急、没有桥梁跨越的河流，水深足以冲走大多数人。</p>
+        <div class="dh-labeled-row"><span class="dh-label">趋向:</span> 阻隔通行、卷走措手不及的人、分隔两岸</div>
+        <div class="dh-labeled-row"><span class="dh-label">潜在敌人:</span> 野兽 (熊, 玻璃蛇), 锯齿刀强盗</div>
+        <span class="dh-section-title">特性</span>
+        <div class="dh-trait"><span class="dh-trait-name">危险渡河 Dangerous Crossing - 被动</span><br>• 穿越河流需要队伍完成一个进展计时 (4)。掷骰结果为恐惧失败的玩家角色会立即成为"暗流"动作的目标。<br><em>是否有玩家角色以前曾涉水渡过类似的河流？他们中是否有人害怕溺水？</em></div>
+        <div class="dh-trait"><span class="dh-trait-name">暗流 Undertow - 动作 [1 恐惧点]</span><br>• 花费 1 恐惧点将一名玩家角色卷入暗流。其必须进行一次敏捷反应掷骰。失败时，受到 1d6+1 点物理伤害。<br><em>这片水域是否存在掠食者？</em></div>
+    </div>
   </div>`,
 };
 
