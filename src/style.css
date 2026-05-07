@@ -1998,3 +1998,207 @@ body {
     flex-direction: column;
   }
 }
+
+/* ---- Daggerheart (DH) Components ---- */
+
+.trpg-dh-enemy {
+    font-family: 'Crimson Text', serif;
+    background: #fff !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    margin: 20px 0 !important;
+    padding: 20px 20px 20px 30px !important;
+    position: relative !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    color: #111 !important;
+    display: block !important;
+}
+
+.trpg-dh-enemy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 10px;
+    background: #8a1c1c; /* Default Enemy Red */
+}
+
+.trpg-dh-enemy h3 {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 2.2em !important;
+    margin: 0 !important;
+    color: #111 !important;
+    text-transform: uppercase !important;
+    line-height: 1 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+.trpg-dh-enemy .dh-meta {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 1.1em !important;
+    color: #666 !important;
+    margin-bottom: 15px !important;
+}
+
+.trpg-dh-enemy hr {
+    border: none !important;
+    border-top: 1px solid #333 !important;
+    margin: 10px 0 !important;
+}
+
+.trpg-dh-enemy .dh-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 1px !important;
+    background: #ccc !important;
+    border: 1px solid #ccc !important;
+    margin: 15px 0 !important;
+}
+
+.trpg-dh-enemy .dh-grid-item {
+    background: #f4f4f4 !important;
+    padding: 8px !important;
+    text-align: center !important;
+}
+
+.trpg-dh-enemy .dh-grid-label {
+    font-size: 0.75em !important;
+    font-weight: bold !important;
+    color: #666 !important;
+    text-transform: uppercase !important;
+    display: block !important;
+}
+
+.trpg-dh-enemy .dh-grid-value {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 1.2em !important;
+    font-weight: 700 !important;
+    color: #111 !important;
+}
+
+.trpg-dh-enemy .dh-attack-row {
+    background: #f9f9f9 !important;
+    padding: 8px 12px !important;
+    margin-bottom: 15px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-family: 'Crimson Text', serif !important;
+    border-radius: 4px !important;
+}
+
+.trpg-dh-enemy .dh-section-title {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 1.3em !important;
+    color: #333 !important;
+    border-bottom: 2px solid #333 !important;
+    margin: 20px 0 10px 0 !important;
+    display: block !important;
+}
+
+.trpg-dh-enemy .dh-trait {
+    margin-bottom: 8px !important;
+}
+
+.trpg-dh-enemy .dh-trait-name {
+    font-weight: bold !important;
+}
+
+/* DH Scene / Environment Card */
+.trpg-dh-scene {
+    font-family: 'Crimson Text', serif;
+    background: #fff !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    margin: 20px 0 !important;
+    padding: 20px 20px 20px 30px !important;
+    position: relative !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    color: #111 !important;
+    display: block !important;
+}
+
+.trpg-dh-scene::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 10px;
+    background: #1c538a; /* Default Scene Teal */
+}
+
+.trpg-dh-scene h3 {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 2em !important;
+    margin: 0 !important;
+    color: #111 !important;
+    line-height: 1.1 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+.trpg-dh-scene .dh-en-title {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 0.9em !important;
+    color: #1c538a !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin-bottom: 5px !important;
+}
+
+.trpg-dh-scene .dh-scene-meta {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 1.1em !important;
+    margin-bottom: 10px !important;
+}
+
+.trpg-dh-scene .dh-desc {
+    font-style: italic !important;
+    color: #555 !important;
+    margin-bottom: 15px !important;
+    border-bottom: 1px solid #ddd !important;
+    padding-bottom: 10px !important;
+}
+
+.trpg-dh-scene .dh-labeled-row {
+    margin-bottom: 5px !important;
+}
+
+.trpg-dh-scene .dh-label {
+    font-weight: bold !important;
+    font-family: 'Crimson Text', serif !important;
+}
+
+[data-theme="dark"] .trpg-dh-enemy, 
+[data-theme="dark"] .trpg-dh-scene {
+    background: #1c1c1e !important;
+    border-color: #333 !important;
+    color: #eee !important;
+}
+
+[data-theme="dark"] .trpg-dh-enemy h3,
+[data-theme="dark"] .trpg-dh-scene h3 {
+    color: #fff !important;
+}
+
+[data-theme="dark"] .trpg-dh-enemy .dh-grid-item {
+    background: #2c2c2e !important;
+}
+
+[data-theme="dark"] .trpg-dh-enemy .dh-grid-value,
+[data-theme="dark"] .trpg-dh-enemy .dh-grid-label {
+    color: #eee !important;
+}
+
+[data-theme="dark"] .trpg-dh-enemy .dh-attack-row {
+    background: #2c2c2e !important;
+}
+
+[data-theme="dark"] .trpg-dh-enemy .dh-section-title {
+    color: #fff !important;
+    border-bottom-color: #eee !important;
+}

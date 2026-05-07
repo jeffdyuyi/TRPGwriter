@@ -90,6 +90,39 @@ const TEMPLATES = {
   </div>`,
 
     'dice-inline': `<span class="dice-inline" data-dice="1d20" contenteditable="false">1d20</span>`,
+
+    'dh-enemy': `<div class="trpg-dh-enemy" contenteditable="true">
+    <h3>锯齿刀强盗</h3>
+    <p class="dh-meta">位阶1 标准</p>
+    <div class="dh-labeled-row"><span class="dh-label">动机/战术:</span> 逃跑、获利</div>
+    <div class="dh-labeled-row"><span class="dh-label">经历:</span> 盗贼+2</div>
+    <div class="dh-grid">
+      <div class="dh-grid-item"><span class="dh-grid-label">难度</span><span class="dh-grid-value">12</span></div>
+      <div class="dh-grid-item"><span class="dh-grid-label">阈值</span><span class="dh-grid-value">8/14</span></div>
+      <div class="dh-grid-item"><span class="dh-grid-label">生命</span><span class="dh-grid-value">5</span></div>
+      <div class="dh-grid-item"><span class="dh-grid-label">压力</span><span class="dh-grid-value">3</span></div>
+    </div>
+    <div class="dh-attack-row">
+      <span><strong>攻击:</strong> +1</span>
+      <span><strong>匕首:</strong> 近战</span>
+      <span>1d8+1 物理</span>
+    </div>
+    <span class="dh-section-title">特性</span>
+    <div class="dh-trait"><span class="dh-trait-name">如履平地</span> 被动: 锯齿刀强盗爬起来和奔跑一样轻松。</div>
+    <div class="dh-trait"><span class="dh-trait-name">居高临下</span> 被动: 当锯齿刀强盗从一个目标上方进行普通攻击并成功时，其造成 1d10+1 的物理伤害而非普通伤害。</div>
+  </div>`,
+
+    'dh-scene': `<div class="trpg-dh-scene" contenteditable="true">
+    <h3>汹涌河流</h3>
+    <div class="dh-en-title">Raging River</div>
+    <p class="dh-scene-meta">位阶1 险境 | 难度 10</p>
+    <p class="dh-desc">一条流速湍急、没有桥梁跨越的河流，水深足以冲走大多数人。</p>
+    <div class="dh-labeled-row"><span class="dh-label">趋向:</span> 阻隔通行、卷走措手不及的人、分隔两岸</div>
+    <div class="dh-labeled-row"><span class="dh-label">潜在敌人:</span> 野兽 (熊, 玻璃蛇), 锯齿刀强盗</div>
+    <span class="dh-section-title">特性</span>
+    <div class="dh-trait"><span class="dh-trait-name">危险渡河 Dangerous Crossing - 被动</span><br>• 穿越河流需要队伍完成一个进展计时 (4)。掷骰结果为恐惧失败的玩家角色会立即成为"暗流"动作的目标。<br><em>是否有玩家角色以前曾涉水渡过类似的河流？他们中是否有人害怕溺水？</em></div>
+    <div class="dh-trait"><span class="dh-trait-name">暗流 Undertow - 动作 [1 恐惧点]</span><br>• 花费 1 恐惧点将一名玩家角色卷入暗流。其必须进行一次敏捷反应掷骰。失败时，受到 1d6+1 点物理伤害。<br><em>这片水域是否存在掠食者？</em></div>
+  </div>`,
 };
 
 /**
@@ -111,6 +144,8 @@ export function executeToolbarAction(action, editorEl) {
         case 'spell':
         case 'coc-spell':
         case 'item':
+        case 'dh-enemy':
+        case 'dh-scene':
             insertHTML(TEMPLATES[action] + '<p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>');
             break;
 
