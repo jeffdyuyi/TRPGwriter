@@ -237,10 +237,12 @@ function loadActiveFile() {
   void editor.offsetWidth; // force reflow
   editor.classList.add('fade-in');
   editor.innerHTML = file.doc.content || '';
-  // Update layout after loading content
+  // Update layout after loading content - use double frame delay to ensure stability
   requestAnimationFrame(() => {
-    updatePageLayout();
-    updateStatusBar();
+    requestAnimationFrame(() => {
+      updatePageLayout();
+      updateStatusBar();
+    });
   });
 }
 
@@ -767,10 +769,18 @@ async function handleImportFile(e) {
     let doc;
     if (ext === 'json') {
       doc = await importFromJSON(text);
+      showToast('导入成功', 'success');
     } else if (ext === 'md') {
-      doc = await importFromMarkdown(text, title);
+      const result = await importFromMarkdown(text, title);
+      doc = result.doc;
+      const s = result.stats;
+      showToast(`导入完成: 识别到 ${s.notes}个提示, ${s.blocks}个特色块, ${s.dice}个骰子`, 'success');
+      if (s.failures && s.failures.length > 0) {
+        showToast(`部分解析失败: ${s.failures.join(', ')}`, 'warning');
+      }
     } else if (ext === 'txt') {
       doc = await importFromTXT(text, title);
+      showToast('导入成功', 'success');
     } else {
       throw new Error('不支持的文件格式');
     }
@@ -779,7 +789,6 @@ async function handleImportFile(e) {
     state.activeFileIndex = state.openFiles.length - 1;
     loadActiveFile();
     renderFileTabs();
-    showToast('导入成功', 'success');
   } catch (err) {
     showToast('导入失败: ' + err.message, 'error');
   }
@@ -1368,72 +1377,81 @@ function initFloatingDeleteBtn() {
 // =============================================
 //  Page Layout (A4 Pagination)
 // =============================================
+let _isLayoutUpdating = false;
+
 function updatePageLayout() {
-  const container = $('#page-container');
-  const overlay = $('#page-overlay');
+  if (_isLayoutUpdating) return;
+  _isLayoutUpdating = true;
 
-  if (!container || !overlay) return;
+  try {
+    const container = $('#page-container');
+    const overlay = $('#page-overlay');
 
-  // 1mm = 3.7795px approx
-  const mmToPx = 3.779527559;
-  const pageHeight = Math.ceil(297 * mmToPx); // ~1123px standard A4 height at 96dpi
+    if (!container || !overlay) return;
 
-  // We need to reset height to auto temporarily to measure natural content height
-  editor.style.height = 'auto'; // Reset to measure
-  const contentHeight = editor.scrollHeight;
-  const numPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+    // 1mm = 3.7795px approx
+    const mmToPx = 3.779527559;
+    const pageHeight = Math.ceil(297 * mmToPx); // ~1123px standard A4 height at 96dpi
 
-  // Set height to multiple of page height
-  editor.style.height = `${numPages * pageHeight}px`;
+    // We need to reset height to auto temporarily to measure natural content height
+    editor.style.height = 'auto'; // Reset to measure
+    const contentHeight = editor.scrollHeight;
+    const numPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
 
-  const file = state.openFiles[state.activeFileIndex];
-  const bgData = (file && file.doc.backgrounds) || {};
-  const bgDataStr = JSON.stringify(bgData);
-  const fileId = file ? file.id : null;
+    // Set height to multiple of page height
+    editor.style.height = `${numPages * pageHeight}px`;
 
-  // Memoization: Do not re-create DOM elements if nothing has changed
-  if (updatePageLayout.lastRun
-    && updatePageLayout.lastRun.fileId === fileId
-    && updatePageLayout.lastRun.numPages === numPages
-    && updatePageLayout.lastRun.bgDataStr === bgDataStr) {
-    return;
-  }
+    const file = state.openFiles[state.activeFileIndex];
+    const bgData = (file && file.doc.backgrounds) || {};
+    const bgDataStr = JSON.stringify(bgData);
+    const fileId = file ? file.id : null;
 
-  updatePageLayout.lastRun = { fileId, numPages, bgDataStr };
+    // Memoization: Do not re-create DOM elements if nothing has changed
+    if (updatePageLayout.lastRun
+      && updatePageLayout.lastRun.fileId === fileId
+      && updatePageLayout.lastRun.numPages === numPages
+      && updatePageLayout.lastRun.bgDataStr === bgDataStr) {
+      return;
+    }
 
-  overlay.innerHTML = '';
-  const underlay = $('#page-underlay');
-  if (underlay) underlay.innerHTML = '';
+    updatePageLayout.lastRun = { fileId, numPages, bgDataStr };
 
-  for (let i = 1; i <= numPages; i++) {
-    // Underlay bg card for individual page
-    if (underlay) {
-      const bgCard = document.createElement('div');
-      bgCard.className = 'page-bg-card';
-      bgCard.style.top = `${(i - 1) * pageHeight}px`;
-      bgCard.style.height = `${pageHeight}px`;
+    overlay.innerHTML = '';
+    const underlay = $('#page-underlay');
+    if (underlay) underlay.innerHTML = '';
 
-      let bgImg = bgData[i.toString()] || bgData['all'];
-      if (bgImg) {
-        bgCard.style.backgroundImage = `url(${bgImg})`;
+    for (let i = 1; i <= numPages; i++) {
+      // Underlay bg card for individual page
+      if (underlay) {
+        const bgCard = document.createElement('div');
+        bgCard.className = 'page-bg-card';
+        bgCard.style.top = `${(i - 1) * pageHeight}px`;
+        bgCard.style.height = `${pageHeight}px`;
+
+        let bgImg = bgData[i.toString()] || bgData['all'];
+        if (bgImg) {
+          bgCard.style.backgroundImage = `url(${bgImg})`;
+        }
+        underlay.appendChild(bgCard);
       }
-      underlay.appendChild(bgCard);
-    }
 
-    // Page Number
-    const pageNum = document.createElement('div');
-    pageNum.className = 'page-number';
-    pageNum.textContent = `- ${i} -`;
-    pageNum.style.top = `${i * pageHeight - 30}px`; // 30px from bottom
-    overlay.appendChild(pageNum);
+      // Page Number
+      const pageNum = document.createElement('div');
+      pageNum.className = 'page-number';
+      pageNum.textContent = `- ${i} -`;
+      pageNum.style.top = `${i * pageHeight - 30}px`; // 30px from bottom
+      overlay.appendChild(pageNum);
 
-    // Divider (between pages)
-    if (i < numPages) {
-      const divider = document.createElement('div');
-      divider.className = 'page-divider';
-      divider.dataset.page = `第 ${i + 1} 页`;
-      divider.style.top = `${i * pageHeight}px`;
-      overlay.appendChild(divider);
+      // Divider (between pages)
+      if (i < numPages) {
+        const divider = document.createElement('div');
+        divider.className = 'page-divider';
+        divider.dataset.page = `第 ${i + 1} 页`;
+        divider.style.top = `${i * pageHeight}px`;
+        overlay.appendChild(divider);
+      }
     }
+  } finally {
+    _isLayoutUpdating = false;
   }
 }

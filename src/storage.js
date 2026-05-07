@@ -3,6 +3,8 @@
  * Handles multi-file document management with auto-save
  */
 
+import { marked } from 'marked';
+
 const DB_NAME = 'trpg-writer-db';
 const DB_VERSION = 3; // Bumped to add custom_data store
 const STORE_NAME = 'documents';
@@ -373,11 +375,11 @@ function convertNodeToMarkdown(node) {
     // --- TRPG Special Blocks ---
     if (node.classList.contains('trpg-note')) {
         const inner = convertChildrenToMarkdown(node).trim();
-        return `\n> **📜 提示**\n>\n${inner.split('\n').map(l => `> ${l}`).join('\n')}\n\n`;
+        return `\n<!-- trpg:note-start -->\n> **📜 提示**\n>\n${inner.split('\n').map(l => `> ${l}`).join('\n')}\n<!-- trpg:note-end -->\n\n`;
     }
     if (node.classList.contains('trpg-warning')) {
         const inner = convertChildrenToMarkdown(node).trim();
-        return `\n> **⚠️ 警告**\n>\n${inner.split('\n').map(l => `> ${l}`).join('\n')}\n\n`;
+        return `\n<!-- trpg:warning-start -->\n> **⚠️ 警告**\n>\n${inner.split('\n').map(l => `> ${l}`).join('\n')}\n<!-- trpg:warning-end -->\n\n`;
     }
     if (node.classList.contains('trpg-stat-block')) {
         return convertStatBlock(node);
@@ -386,13 +388,13 @@ function convertNodeToMarkdown(node) {
         return convertStatBlock(node);
     }
     if (node.classList.contains('trpg-spell-card')) {
-        return convertCardBlock(node, '🔮 法术');
+        return convertCardBlock(node, 'spell');
     }
     if (node.classList.contains('trpg-coc-spell-card')) {
-        return convertCardBlock(node, '📖 COC法术');
+        return convertCardBlock(node, 'coc-spell');
     }
     if (node.classList.contains('trpg-item-card')) {
-        return convertCardBlock(node, '🛡️ 物品');
+        return convertCardBlock(node, 'item');
     }
     if (node.classList.contains('trpg-generic-block')) {
         const inner = convertChildrenToMarkdown(node).trim();
@@ -605,20 +607,21 @@ function convertTableToMarkdown(tableNode) {
  * Convert a TRPG stat block to Markdown
  */
 function convertStatBlock(node) {
-    let out = '\n---\n\n';
+    const type = node.classList.contains('trpg-coc-stat-block') ? 'coc-stat' : 'stat';
+    let out = `\n<!-- trpg:${type}-start -->\n---\n\n`;
     out += convertChildrenToMarkdown(node).trim();
-    out += '\n\n---\n\n';
+    out += `\n\n---\n<!-- trpg:${type}-end -->\n\n`;
     return out;
 }
 
 /**
  * Convert a TRPG card block (spell/item) to Markdown
  */
-function convertCardBlock(node, prefix) {
-    let out = '\n---\n\n';
+function convertCardBlock(node, type) {
+    let out = `\n<!-- trpg:${type}-start -->\n---\n\n`;
     const inner = convertChildrenToMarkdown(node).trim();
     out += inner;
-    out += '\n\n---\n\n';
+    out += `\n\n---\n<!-- trpg:${type}-end -->\n\n`;
     return out;
 }
 
@@ -716,38 +719,131 @@ export async function importFromJSON(jsonString) {
  * Import a document from Markdown
  */
 export async function importFromMarkdown(mdText, title = '导入的Markdown') {
-    // Simple MD to HTML conversion for basic text
-    // A robust solution would use a library like marked.js
-    let html = mdText
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
-        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-        .replace(/\*(.*)\*/gim, '<em>$1</em>')
-        .replace(/!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='$2' />")
-        .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
-        .replace(/\n$/gim, '<br />');
+    // 使用 marked.js 进行标准 Markdown 解析
+    marked.setOptions({
+        gfm: true,
+        breaks: false,
+    });
 
-    // Split by double newline and wrap in <p>
-    html = html.split('\n\n').map(p => {
-        if (!p.startsWith('<h') && !p.startsWith('<blockquote') && !p.startsWith('<img') && p.trim().length > 0) {
-            return `<p>${p}</p>`;
-        }
-        return p;
-    }).join('\n');
+    const rawHtml = marked.parse(mdText);
+    
+    // 还原 TRPG 特色组件
+    const { html: finalHtml, stats } = restoreTrpgBlocks(rawHtml);
 
     const doc = {
         id: generateId(),
         title: title,
-        content: html,
+        content: finalHtml,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         pageStyle: 'parchment'
     };
     
     await saveDocument(doc);
-    return doc;
+    return { doc, stats };
+}
+
+/**
+ * 对 marked 输出的 HTML 进行二次处理，还原 TRPG 特色组件
+ */
+function restoreTrpgBlocks(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(`<div id="root">${html}</div>`, 'text/html');
+    const root = doc.getElementById('root');
+    const stats = { notes: 0, warnings: 0, blocks: 0, dice: 0, failures: [] };
+
+    // 1. 还原内联骰子：<code>🎲1d20+5</code>
+    root.querySelectorAll('code').forEach(code => {
+        const text = code.textContent;
+        if (text.startsWith('🎲')) {
+            const formula = text.slice(1); // 去掉 🎲
+            const span = doc.createElement('span');
+            span.className = 'dice-inline';
+            span.dataset.dice = formula;
+            span.contentEditable = 'false';
+            span.textContent = formula;
+            code.replaceWith(span);
+            stats.dice++;
+        }
+    });
+
+    // 2. 识别并还原精确块 (通过 HTML 注释)
+    // 注意：marked 默认会保留 HTML 注释，但它们可能被包裹在 <p> 中
+    const iterator = document.createNodeIterator(root, NodeFilter.SHOW_COMMENT, null, false);
+    let comment;
+    const markers = [];
+    while (comment = iterator.nextNode()) {
+        markers.push(comment);
+    }
+
+    markers.forEach(startNode => {
+        const match = startNode.nodeValue.match(/trpg:(.*)-start/);
+        if (match) {
+            const type = match[1];
+            const contentNodes = [];
+            let curr = startNode.nextSibling;
+            let endNode = null;
+
+            while (curr) {
+                if (curr.nodeType === Node.COMMENT_NODE && curr.nodeValue === `trpg:${type}-end`) {
+                    endNode = curr;
+                    break;
+                }
+                contentNodes.push(curr);
+                curr = curr.nextSibling;
+            }
+
+            if (endNode) {
+                const div = doc.createElement('div');
+                // 映射类型到对应的 CSS 类名
+                const typeMap = {
+                    'note': 'trpg-note',
+                    'warning': 'trpg-warning',
+                    'stat': 'trpg-stat-block',
+                    'coc-stat': 'trpg-coc-stat-block',
+                    'spell': 'trpg-spell-card',
+                    'coc-spell': 'trpg-coc-spell-card',
+                    'item': 'trpg-item-card'
+                };
+                div.className = typeMap[type] || 'trpg-generic-block';
+                
+                // 将内容移动到 div
+                contentNodes.forEach(node => div.appendChild(node));
+                
+                // 移除标记
+                const parent = startNode.parentNode;
+                parent.insertBefore(div, startNode);
+                startNode.remove();
+                endNode.remove();
+
+                // 清理可能遗留的空 <p> 标签 (因为注释有时被包裹在 <p> 中)
+                if (parent.tagName === 'P' && parent.childNodes.length === 0) {
+                    parent.remove();
+                }
+
+                if (type === 'note') stats.notes++;
+                else if (type === 'warning') stats.warnings++;
+                else stats.blocks++;
+            }
+        }
+    });
+
+    // 3. 处理分页符
+    root.querySelectorAll('hr').forEach(hr => {
+        const next = hr.nextElementSibling;
+        if (next && next.tagName === 'P' && next.textContent.includes('[分页]')) {
+            const endHr = next.nextElementSibling;
+            if (endHr && endHr.tagName === 'HR') {
+                const pageBreak = doc.createElement('hr');
+                pageBreak.className = 'page-break';
+                hr.replaceWith(pageBreak);
+                next.remove();
+                endHr.remove();
+            }
+        }
+    });
+
+    return { html: root.innerHTML, stats };
 }
 
 /**
