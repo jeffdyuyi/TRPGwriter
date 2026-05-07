@@ -617,62 +617,58 @@ function handleExportPDF() {
 <html><head>
 <meta charset="UTF-8">
 <title>${file.doc.title || 'TRPG文档'}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
 <style>
+:root {
+  --accent: #0071e3;
+  --accent-orange: #f54e00;
+  --accent-red: #e60023;
+  --text-primary: #1d1d1f;
+  --text-secondary: #615d59;
+  --text-muted: #a39e98;
+  --text-plum: #211922;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+}
 body {
-  font-family: 'Noto Serif SC', serif;
-  line-height: 1.7;
-  font-size: 15px;
-  color: #333;
+  font-family: "Charter", "Bitstream Charter", "Sitka Text", Cambria, serif;
+  line-height: 1.8;
+  font-size: 16px;
+  color: var(--text-plum);
   max-width: 210mm;
   margin: 0 auto;
-  padding: 20px;
 }
-h1, h2, h3 { font-family: 'ZCOOL XiaoWei', serif; color: #58180d; }
-h1 { border-bottom: 3px solid #c9ad6a; padding-bottom: 4px; }
-h2 { border-bottom: 2px solid #c9ad6a; padding-bottom: 3px; }
-h3 { border-bottom: 1px solid #c9ad6a; }
-h4 { color: #58180d; font-style: italic; }
-blockquote { border-left: 4px solid #c9ad6a; padding: 0.4em 1em; background: rgba(201,173,106,0.12); font-style: italic; }
-table { width: 100%; border-collapse: collapse; }
-th { background: #58180d; color: #fff; padding: 6px 10px; text-align: left; }
-td { padding: 5px 10px; border-bottom: 1px solid #c9ad6a; }
-.trpg-note { background: #f5ecd7; border-left: 4px solid #c9ad6a; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
-.trpg-note::before { content: '📜 提示'; display: block; font-weight: 700; color: #7c6420; margin-bottom: 4px; font-size: 0.85em; }
-.trpg-warning { background: #fdf0e8; border-left: 4px solid #e74c3c; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; }
-.trpg-warning::before { content: '⚠️ 警告'; display: block; font-weight: 700; color: #c0392b; margin-bottom: 4px; font-size: 0.85em; }
-.trpg-stat-block { background: #fdf6e3; border: 2px solid #58180d; padding: 16px 20px; margin: 16px 0; font-size: 0.92em; }
-.trpg-stat-block::before, .trpg-stat-block::after { content: ''; display: block; height: 6px; background: #58180d; margin: 4px -20px 8px; }
-.trpg-stat-block::after { margin: 8px -20px 4px; }
-.trpg-stat-block h3 { color: #58180d; font-size: 1.4em; border: none; }
-.trpg-stat-block table th { background: transparent; color: #58180d; text-align: center; border-bottom: 2px solid #58180d; }
+h1, h2, h3 { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif; color: var(--text-primary); letter-spacing: -0.02em; }
+h1 { font-size: 2.5em; font-weight: 800; border-bottom: 1px solid var(--border-strong); padding-bottom: 4px; margin: 1em 0 0.5em; }
+h2 { font-size: 1.8em; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 3px; margin: 1.2em 0 0.6em; }
+h3 { font-size: 1.4em; font-weight: 700; border-bottom: 1px solid var(--border); margin: 1.2em 0 0.6em; }
+blockquote { border-left: 3px solid var(--accent); padding: 0.5em 1.5em; background: #f6f5f4; font-style: italic; border-radius: 0 4px 4px 0; }
+table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+th { background: #f6f5f4; color: var(--text-primary); padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border-strong); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.trpg-note { background: #f6f5f4; border: 1px solid var(--border); padding: 16px 20px; margin: 20px 0; border-radius: var(--radius-md); position: relative; }
+.trpg-note::before { content: 'NOTE'; display: block; font-weight: 800; color: var(--accent); margin-bottom: 8px; font-size: 11px; letter-spacing: 0.1em; }
+.trpg-warning { background: rgba(230, 0, 35, 0.05); border: 1px solid rgba(230, 0, 35, 0.1); padding: 16px 20px; margin: 20px 0; border-radius: var(--radius-md); position: relative; }
+.trpg-warning::before { content: 'WARNING'; display: block; font-weight: 800; color: var(--accent-red); margin-bottom: 8px; font-size: 11px; letter-spacing: 0.1em; }
+.trpg-stat-block { background: #ffffff; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 24px; margin: 24px 0; position: relative; }
+.trpg-stat-block::before, .trpg-stat-block::after { content: ''; position: absolute; left: 0; right: 0; height: 2px; background: var(--accent-orange); }
+.trpg-stat-block::before { top: 0; } .trpg-stat-block::after { bottom: 0; }
+.trpg-stat-block h3 { color: var(--accent-orange); font-size: 1.4em; font-weight: 800; border: none; margin: 0 0 4px; }
+.trpg-stat-block .stat-subtitle { font-style: italic; color: var(--text-secondary); margin-bottom: 8px; font-size: 0.9em; }
+.trpg-stat-block table th { background: transparent; color: var(--accent-orange); text-align: center; border-bottom: none; }
 .trpg-stat-block table td { text-align: center; border: none; }
-.trpg-coc-stat-block { background: #f7f3ed; border-top: 4px solid #4a5445; border-bottom: 4px solid #4a5445; padding: 16px 20px; margin: 16px 0; font-size: 0.95em; color: #333; }
-.trpg-coc-stat-block h3 { font-size: 1.4em; margin: 0 0 10px; font-weight: 700; color: #333; border: none; }
-.trpg-coc-stat-block table { width: 100%; margin: 10px 0; border-collapse: collapse; }
-.trpg-coc-stat-block table th { text-align: left; background: transparent; color: #4a5445; border-bottom: none; }
-.trpg-coc-stat-block table td { text-align: left; border: none; }
-.trpg-coc-stat-block .stat-indent { margin: 4px 0 4px 1.5em; text-indent: -1.5em; }
-.trpg-coc-spell-card { padding: 10px 16px; margin: 12px 0; background: transparent; }
-.trpg-coc-spell-card h3 { color: #333; font-size: 1.25em; margin: 0 0 6px; font-weight: 700; border: none; }
-.trpg-coc-spell-card .coc-spell-meta { font-size: 0.95em; color: #333; margin: 4px 0; }
-.trpg-coc-spell-card .coc-spell-desc { font-size: 0.95em; color: #333; margin: 8px 0; text-indent: 2em; }
-.trpg-spell-card { background: #f8f0ff; border: 1px solid #9b59b6; border-top: 3px solid #9b59b6; border-radius: 6px; padding: 14px 18px; margin: 12px 0; }
-.trpg-spell-card h4 { color: #6c3483; font-style: normal; border: none; }
-.trpg-item-card { background: #f8fff5; border: 1px solid #27ae60; border-top: 3px solid #27ae60; border-radius: 6px; padding: 14px 18px; margin: 12px 0; }
-.trpg-item-card h4 { color: #1e8449; font-style: normal; border: none; }
-.dice-inline { background: #58180d; color: #fdf6e3; padding: 1px 8px; border-radius: 4px; font-size: 0.88em; font-weight: 600; }
+.dice-inline { background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 0.9em; font-weight: 600; }
 .page-break { page-break-after: always; break-after: page; border: none; height: 0; margin: 0; }
-hr { border: none; border-top: 2px solid #c9ad6a; margin: 1em 0; }
-img { max-width: 100%; }
-.page-container { position: relative; width: 210mm; z-index: 1; }
-.page-underlay { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+hr { border: none; border-top: 1px solid var(--border-strong); margin: 2em 0; }
+img { max-width: 100%; border-radius: 4px; }
+.page-container { position: relative; width: 210mm; }
 .page-bg-card { position: absolute; left: 0; width: 100%; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .wysiwyg-editor { position: relative; width: 100%; outline: none; background: transparent; padding: var(--page-pad-top, 35mm) var(--page-pad-right, 25.4mm) var(--page-pad-bottom, 30mm) var(--page-pad-left, 25.4mm); }
 @media print {
   body { margin: 0; padding: 0; max-width: none; }
-  .page-container { margin: 0; box-shadow: none; }
-  .page-break { page-break-after: always; }
+  .page-container { margin: 0; }
   .page-overlay { display: none; }
 }
 </style>
@@ -680,6 +676,7 @@ img { max-width: 100%; }
   printWin.document.close();
   setTimeout(() => { printWin.print(); }, 500);
 }
+
 
 async function handleExportHTML() {
   saveCurrentToMemory();

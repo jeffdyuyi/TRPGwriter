@@ -4,43 +4,63 @@
 
 /* ---- CSS Variables / Tokens ---- */
 :root {
-  /* Dark theme (default) */
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
-  --bg-tertiary: #0f3460;
-  --bg-surface: #1e2746;
-  --text-primary: #e0e0e0;
-  --text-secondary: #a0a0b8;
-  --text-muted: #6c6c80;
-  --accent: #e94560;
-  --accent-hover: #ff6b81;
-  --accent-subtle: rgba(233, 69, 96, 0.15);
-  --border: #2a2a4a;
-  --border-light: #3a3a5a;
-  --shadow: rgba(0, 0, 0, 0.4);
-  --radius: 8px;
-  --radius-sm: 4px;
-  --transition: 0.2s ease;
-  --header-height: 48px;
-  --format-bar-height: 40px;
-  --toolbar-width: 96px;
-  /* Widened from 72px */
+  /* --- Normalized Premium Design System --- */
+  
+  /* Primary Palette (Light - Default) */
+  --bg-primary: #f2f1ed;      /* Cursor Cream */
+  --bg-secondary: #f6f5f4;    /* Notion Warm White */
+  --bg-tertiary: #ebeae5;     /* Cursor Surface 300 */
+  --bg-surface: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  
+  /* Text */
+  --text-primary: #1d1d1f;    /* Apple Near Black */
+  --text-secondary: #615d59;  /* Notion Warm Gray 500 */
+  --text-muted: #a39e98;      /* Notion Warm Gray 300 */
+  --text-plum: #211922;       /* Pinterest Plum Black */
+  
+  /* Accents */
+  --accent: #0071e3;          /* Apple Blue */
+  --accent-hover: #0077ed;
+  --accent-subtle: rgba(0, 113, 227, 0.08);
+  --accent-orange: #f54e00;   /* Cursor Orange */
+  --accent-red: #e60023;      /* Pinterest Red */
+  
+  /* Borders & Shadows */
+  --border: rgba(0, 0, 0, 0.08);       /* Notion Whisper Border */
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-apple: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+  
+  /* Radius */
+  --radius-xs: 4px;   /* Notion style */
+  --radius-sm: 8px;   /* Apple/Cursor style */
+  --radius-md: 12px;  /* Pinterest style */
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  
+  /* Layout */
+  --header-height: 52px;
+  --toolbar-width: 80px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme="light"] {
-  --bg-primary: #f5f0eb;
-  --bg-secondary: #ede5da;
-  --bg-tertiary: #d4c5b2;
-  --bg-surface: #fff;
-  --text-primary: #2c2c2c;
-  --text-secondary: #5a5a5a;
-  --text-muted: #999;
-  --accent: #c0392b;
-  --accent-hover: #e74c3c;
-  --accent-subtle: rgba(192, 57, 43, 0.1);
-  --border: #d4c5b2;
-  --border-light: #e0d5c5;
-  --shadow: rgba(0, 0, 0, 0.1);
+[data-theme="dark"] {
+  --bg-primary: #000000;      /* Apple Pure Black */
+  --bg-secondary: #1d1d1f;    /* Apple Near Black */
+  --bg-tertiary: #272729;     /* Apple Dark Surface 1 */
+  --bg-surface: #2a2a2d;      /* Apple Dark Surface 4 */
+  --bg-glass: rgba(0, 0, 0, 0.75);
+  
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted: rgba(255, 255, 255, 0.48);
+  
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --shadow: rgba(0, 0, 0, 0.5);
 }
 
 /* ---- Reset ---- */
@@ -50,12 +70,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ---- Custom Scrollbar ---- */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -63,26 +85,28 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-light);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-light) transparent;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 body {
-  font-family: 'Noto Sans SC', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
   height: 100vh;
+  line-height: 1.5;
+  letter-spacing: -0.011em; /* Subtle Apple-style tracking for body */
 }
+
 
 /* ---- App Layout ---- */
 #app {
@@ -96,37 +120,47 @@ body {
   display: flex;
   align-items: center;
   height: var(--header-height);
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
-  padding: 0 8px;
-  gap: 8px;
+  padding: 0 16px;
+  gap: 12px;
   flex-shrink: 0;
   z-index: 100;
+  transition: background var(--transition);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   user-select: none;
+  cursor: pointer;
 }
 
 .logo-icon {
-  font-size: 20px;
+  font-size: 22px;
+  filter: drop-shadow(0 0 8px var(--accent-subtle));
 }
 
 .logo-text {
-  font-family: 'ZCOOL XiaoWei', serif;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+}
+
+.logo-text span {
   color: var(--accent);
-  letter-spacing: 2px;
 }
 
 .header-center {
@@ -134,24 +168,25 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  overflow-x: auto;
+  justify-content: center;
   min-width: 0;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   flex-shrink: 0;
 }
+
 
 /* ---- Icon Buttons ---- */
 .icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -161,6 +196,11 @@ body {
 }
 
 .icon-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.icon-btn.active {
   background: var(--accent-subtle);
   color: var(--accent);
 }
@@ -172,40 +212,42 @@ body {
 /* ---- File Tabs ---- */
 .file-tabs {
   display: flex;
-  gap: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.file-tabs::-webkit-scrollbar {
-  display: none;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  max-width: 100%;
 }
 
 .file-tab {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: 8px;
+  padding: 6px 12px;
   border: none;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-radius: 6px;
   background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition);
-  font-family: 'Noto Sans SC', sans-serif;
 }
 
 .file-tab:hover {
   color: var(--text-primary);
-  background: var(--bg-surface);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .file-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .file-tab.active {
-  color: var(--accent);
+  color: var(--text-primary);
   background: var(--bg-surface);
-  border-bottom: 2px solid var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .file-tab .tab-close {
@@ -216,25 +258,27 @@ body {
   height: 16px;
   font-size: 14px;
   border-radius: 50%;
+  margin-right: -4px;
   opacity: 0;
-  transition: opacity var(--transition);
+  transition: all var(--transition);
 }
 
 .file-tab:hover .tab-close {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .file-tab .tab-close:hover {
   opacity: 1;
-  background: var(--accent-subtle);
+  background: var(--bg-tertiary);
 }
 
 .file-tab .unsaved-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-orange);
 }
+
 
 /* ---- Dropdown ---- */
 .dropdown {
@@ -246,16 +290,24 @@ body {
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 4px;
+  margin-top: 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 0 4px 12px var(--shadow);
-  min-width: 180px;
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  padding: 4px 0;
+  padding: 6px;
+  overflow: hidden;
+  transform-origin: top right;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .dropdown-menu.hidden {
@@ -267,14 +319,15 @@ body {
   text-align: left;
   background: transparent;
   border: none;
+  border-radius: var(--radius-xs);
   color: var(--text-primary);
-  font-size: 12px;
-  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition);
+  transition: all var(--transition);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .dropdown-menu button:hover {
@@ -287,6 +340,7 @@ body {
   flex: 1;
   display: flex;
   overflow: hidden;
+  background: var(--bg-primary);
 }
 
 /* ---- Left Toolbar ---- */
@@ -297,28 +351,41 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   flex-shrink: 0;
-  padding: 6px 0;
-  scrollbar-width: thin;
-  transition: width 0.3s ease, opacity 0.3s ease;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  scrollbar-width: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar-panel::-webkit-scrollbar {
+  display: none;
 }
 
 .toolbar-panel.collapsed {
   width: 0;
   padding: 0;
   opacity: 0;
-  overflow: hidden;
 }
 
 .toolbar-section {
+  width: 100%;
   padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .toolbar-section-title {
-  font-size: 9px;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
-  letter-spacing: 1.5px;
-  padding: 6px 8px 4px;
+  letter-spacing: 0.1em;
+  padding: 8px 0;
+  width: 100%;
   text-align: center;
 }
 
@@ -327,40 +394,48 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 6px 4px;
+  width: 64px;
+  height: 64px;
   border: none;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition);
-  gap: 2px;
+  gap: 4px;
 }
 
 .toolbar-btn:hover {
-  background: var(--accent-subtle);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.toolbar-btn.active {
+  background: var(--bg-surface);
   color: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .toolbar-btn .material-symbols-rounded {
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .toolbar-label {
   font-size: 11px;
-  /* Increased from 9px */
+  font-weight: 500;
   line-height: 1.2;
-  font-family: 'Noto Sans SC', sans-serif;
   text-align: center;
 }
 
 .toolbar-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  justify-content: center;
-  padding: 0 4px;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 4px;
+  width: 100%;
+  padding: 0 8px;
 }
+
 
 .right-panel {
   border-right: none;
@@ -446,101 +521,56 @@ body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--bg-tertiary);
+  background: var(--bg-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 20px 60px;
+  padding: 40px 20px 80px;
+  scrollbar-gutter: stable;
 }
 
-/* File switch fade-in */
-@keyframes editorFadeIn {
-  from {
-    opacity: 0.3;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.wysiwyg-editor.fade-in {
-  animation: editorFadeIn 0.25s ease;
-}
-
-/* Page container — holds editor + page overlay */
+/* Page container */
 .page-container {
   position: relative;
   width: 210mm;
   flex-shrink: 0;
   z-index: 1;
-}
-
-/* Page underlay — holds multiple-page background cards */
-.page-underlay {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-bg-card {
   position: absolute;
   left: 0;
   width: 100%;
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: #fdf6e3;
-  /* Default parchment */
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-apple);
 }
 
 .wysiwyg-editor {
   width: 210mm;
   min-height: 297mm;
-  /* JS will set this to exact multiples of 297mm */
-  padding: 0;
+  padding: 35mm 25.4mm;
   outline: none;
-  line-height: 1.7;
-  font-size: 15px;
-  color: #333;
+  line-height: 1.8;
+  font-size: 16px;
+  color: var(--text-plum);
   cursor: text;
   background: transparent !important;
-  font-family: 'Noto Serif SC', serif;
+  font-family: "Charter", "Bitstream Charter", "Sitka Text", Cambria, serif;
   border: none;
   position: relative;
-  transition: box-shadow 0.3s ease;
+  z-index: 5;
 }
 
-.wysiwyg-editor:focus {
-  box-shadow: 0 0 0 2px var(--accent-subtle), 0 4px 20px var(--shadow);
-}
-
-/* Each 'page' area has padding via inner content — we use padding-based page areas */
-.wysiwyg-editor {
-  --page-height: 297mm;
-  --page-pad-top: 35mm;
-  --page-pad-bottom: 30mm;
-  --page-pad-left: 25.4mm;
-  --page-pad-right: 25.4mm;
-  padding: var(--page-pad-top) var(--page-pad-right) var(--page-pad-bottom) var(--page-pad-left);
-}
-
-/* Page shadow overlay — creates page card shadows and dividers */
-.page-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Individual page shadow cards + divider lines generated by JS */
+/* Page Shadow Overlay */
 .page-shadow {
   position: absolute;
   left: 0;
   width: 100%;
-  box-shadow: 0 4px 20px var(--shadow);
+  box-shadow: var(--shadow-lg);
   pointer-events: none;
+  border: 1px solid var(--border);
 }
 
 .page-divider {
@@ -548,8 +578,8 @@ body {
   left: 0;
   width: 100%;
   height: 0;
-  border-top: 2px dashed rgba(201, 173, 106, 0.6);
-  z-index: 3;
+  border-top: 1px dashed var(--border-strong);
+  z-index: 10;
   pointer-events: none;
 }
 
@@ -559,99 +589,80 @@ body {
   top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-tertiary);
-  padding: 0 12px;
+  background: var(--bg-primary);
+  padding: 0 16px;
   font-size: 11px;
+  font-weight: 600;
   color: var(--text-muted);
-  font-family: 'Noto Sans SC', sans-serif;
-  white-space: nowrap;
-}
-
-/* Page number bottom label */
-.page-number {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: #999;
-  font-family: 'Noto Sans SC', sans-serif;
-  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .wysiwyg-editor:empty::before {
-  content: '点击此处开始编辑...\A\A支持所有富文本格式，以及TRPG专属元素（属性块、法术卡、物品卡等）。\A使用顶部工具条格式化文本，左侧工具栏插入TRPG模块。';
-  white-space: pre-wrap;
-  color: #999;
-  pointer-events: none;
+  content: 'Write your legend here...';
+  color: var(--text-muted);
   font-style: italic;
 }
 
-/* ---- Page styles for editor ---- */
+/* ---- Editor Typography ---- */
 .wysiwyg-editor h1 {
-  font-family: 'ZCOOL XiaoWei', serif;
-  font-size: 2em;
-  color: #58180d;
-  border-bottom: 3px solid #c9ad6a;
-  padding-bottom: 4px;
-  margin: 0.6em 0 0.3em;
-  line-height: 1.3;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-size: 2.5em;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  margin: 1em 0 0.5em;
+  line-height: 1.1;
 }
 
 .wysiwyg-editor h2 {
-  font-family: 'ZCOOL XiaoWei', serif;
-  font-size: 1.6em;
-  color: #58180d;
-  border-bottom: 2px solid #c9ad6a;
-  padding-bottom: 3px;
-  margin: 0.5em 0 0.25em;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  margin: 1.2em 0 0.6em;
+  line-height: 1.2;
 }
 
 .wysiwyg-editor h3 {
-  font-size: 1.3em;
-  color: #58180d;
-  border-bottom: 1px solid #c9ad6a;
-  margin: 0.5em 0 0.2em;
-}
-
-.wysiwyg-editor h4 {
-  font-size: 1.1em;
-  color: #58180d;
-  margin: 0.4em 0 0.2em;
-  font-style: italic;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin: 1.2em 0 0.6em;
 }
 
 .wysiwyg-editor p {
-  margin: 0.4em 0;
-}
-
-.wysiwyg-editor ul,
-.wysiwyg-editor ol {
-  margin: 0.4em 0;
-  padding-left: 1.5em;
-}
-
-.wysiwyg-editor li {
-  margin: 0.15em 0;
+  margin: 0.8em 0;
 }
 
 .wysiwyg-editor blockquote {
-  border-left: 4px solid #c9ad6a;
-  margin: 0.6em 0;
-  padding: 0.4em 1em;
-  background: rgba(201, 173, 106, 0.12);
-  color: #555;
+  border-left: 3px solid var(--accent);
+  margin: 1.5em 0;
+  padding: 0.5em 1.5em;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   font-style: italic;
+  border-radius: 0 4px 4px 0;
 }
 
 .wysiwyg-editor hr {
   border: none;
-  border-top: 2px solid #c9ad6a;
-  margin: 1em 0;
+  border-top: 1px solid var(--border-strong);
+  margin: 2em 0;
 }
 
 .wysiwyg-editor a {
-  color: #58180d;
-  text-decoration: underline;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-subtle);
+  transition: border-color var(--transition);
+}
+
+.wysiwyg-editor a:hover {
+  border-bottom-color: var(--accent);
 }
 
 .wysiwyg-editor img {
@@ -714,149 +725,130 @@ body {
 
 /* ---- TRPG Components (inside editor) ---- */
 .trpg-note {
-  background: #f5ecd7;
-  border-left: 4px solid #c9ad6a;
-  padding: 12px 16px;
-  margin: 12px 0;
-  border-radius: 0 6px 6px 0;
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.08);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  margin: 20px 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   position: relative;
+  overflow: hidden;
 }
 
 .trpg-note::before {
-  content: '📜 提示';
+  content: 'NOTE';
   display: block;
-  font-weight: 700;
-  color: #7c6420;
-  margin-bottom: 4px;
-  font-size: 0.85em;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
 }
 
 .trpg-warning {
-  background: #fdf0e8;
-  border-left: 4px solid #e74c3c;
-  padding: 12px 16px;
-  margin: 12px 0;
-  border-radius: 0 6px 6px 0;
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.08);
+  background: rgba(230, 0, 35, 0.05); /* Pinterest Red subtle wash */
+  border: 1px solid rgba(230, 0, 35, 0.1);
+  padding: 16px 20px;
+  margin: 20px 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   position: relative;
 }
 
 .trpg-warning::before {
-  content: '⚠️ 警告';
+  content: 'WARNING';
   display: block;
-  font-weight: 700;
-  color: #c0392b;
-  margin-bottom: 4px;
-  font-size: 0.85em;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.trpg-generic-block {
-  margin: 16px 0;
-  padding: 4px 0;
-  background: transparent;
-  color: var(--text-color, #333);
-  position: relative;
-}
-
-.trpg-generic-block h3.generic-title {
-  font-family: 'Noto Serif SC', serif;
-  color: #7a200d;
-  font-size: 1.4em;
-  font-weight: 700;
-  margin: 0 0 4px 0;
-  border: none;
-}
-
-.trpg-generic-block hr.generic-divider {
-  border: 0;
-  height: 1px;
-  background-color: #b0a79a;
-  margin: 4px 0 6px 0;
-}
-
-.trpg-generic-block p.generic-subtitle {
-  font-style: italic;
-  font-size: 0.95em;
-  margin: 0 0 8px 0;
-  color: #444;
-}
-
-.trpg-generic-block p.generic-body {
-  text-indent: 2em;
-  margin: 6px 0;
-  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-weight: 800;
+  color: var(--accent-red);
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
 }
 
 .trpg-stat-block {
-  background: #fdf6e3;
-  border: 2px solid #58180d;
-  border-radius: 0;
-  padding: 16px 20px;
-  margin: 16px 0;
+  background: #ffffff;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: var(--shadow-md);
   position: relative;
-  font-size: 0.92em;
-  box-shadow: 0 0 8px rgba(88, 24, 13, 0.15);
 }
 
 .trpg-stat-block::before,
 .trpg-stat-block::after {
   content: '';
-  display: block;
-  height: 6px;
-  background: #58180d;
-  margin: 4px -20px 8px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-orange);
 }
 
-.trpg-stat-block::after {
-  margin: 8px -20px 4px;
-}
+.trpg-stat-block::before { top: 0; }
+.trpg-stat-block::after { bottom: 0; }
 
 .trpg-stat-block h3 {
-  color: #58180d;
+  color: var(--accent-orange);
   font-size: 1.4em;
-  margin: 0 0 0;
+  font-weight: 800;
+  margin: 0 0 4px;
   border: none;
-  font-family: 'ZCOOL XiaoWei', serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .trpg-stat-block .stat-subtitle {
   font-style: italic;
-  color: #666;
-  margin-bottom: 4px;
-  font-size: 0.95em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-size: 0.9em;
 }
 
 .trpg-stat-block .stat-line {
-  margin: 2px 0;
+  margin: 4px 0;
+  font-size: 14px;
 }
 
 .trpg-stat-block .stat-line strong {
-  color: #58180d;
+  color: var(--text-primary);
 }
 
 .trpg-stat-block table {
-  margin: 6px 0;
+  margin: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .trpg-stat-block table th {
   background: transparent;
-  color: #58180d;
+  color: var(--accent-orange);
   text-align: center;
-  padding: 2px 8px;
+  padding: 8px;
+  font-size: 12px;
   font-weight: 700;
-  border-bottom: 2px solid #58180d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: none;
 }
 
 .trpg-stat-block table td {
   text-align: center;
-  padding: 2px 8px;
+  padding: 8px;
+  font-size: 15px;
+  color: var(--text-primary);
   border: none;
-  background: transparent;
+}
+
+.trpg-stat-block h4 {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 12px 0 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
 }
 
 .trpg-coc-stat-block {
@@ -1259,6 +1251,31 @@ body {
 
 .modal:not(.hidden) .modal-content {
   animation: modalContentIn 0.25s ease;
+}
+
+/* ---- Animations ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.editor-wrapper {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Hover effects for premium feel */
+.toolbar-btn:active, .icon-btn:active, .file-tab:active {
+  transform: scale(0.95);
+}
+
+/* Smooth color transitions for everything */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Specific exclusions for performance */
+.wysiwyg-editor, .wysiwyg-editor * {
+  transition: none;
 }
 
 @keyframes modalOverlayIn {
