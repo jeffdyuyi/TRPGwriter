@@ -7,7 +7,7 @@
 - **作者**：不咕鸟（基德）
 - **辅助**：Antigravity Gemini
 - **不咕鸟TRPG创想俱乐部 (QQ群)**：261751459
-- **成都秘密基地约团站**：[http://118.89.179.143/schedule](http://118.89.179.143/schedule)
+- **成都秘密基地**：[https://nogubird.top/](https://nogubird.top/)
 
 ---
 
