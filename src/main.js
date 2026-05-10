@@ -1327,7 +1327,7 @@ function initFloatingDeleteBtn() {
 
   if (container) {
     container.addEventListener('mousemove', (e) => {
-      const mod = e.target.closest('.trpg-generic-block, .trpg-note, .trpg-warning, .trpg-stat-block, .trpg-coc-stat-block, .trpg-spell-card, .trpg-coc-spell-card, .trpg-item-card, .dice-inline');
+      const mod = e.target.closest('.trpg-generic-block, .trpg-note, .trpg-warning, .trpg-stat-block, .trpg-coc-stat-block, .trpg-spell-card, .trpg-coc-spell-card, .trpg-item-card, .dice-inline, .trpg-dh-enemy, .trpg-dh-scene');
       if (mod && editor.contains(mod)) {
         if (currentHoverModule !== mod) {
           currentHoverModule = mod;
