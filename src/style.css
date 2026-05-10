@@ -1103,6 +1103,26 @@ body {
 }
 
 /* ---- Heading style variants ---- */
+.heading-classic .wysiwyg-editor h1,
+.heading-classic .wysiwyg-editor h2,
+.heading-classic .wysiwyg-editor h3,
+.heading-classic .wysiwyg-editor h4 {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.heading-classic .wysiwyg-editor h1 {
+  border-bottom: 1px solid var(--border-strong);
+  padding-bottom: 4px;
+}
+
+.heading-classic .wysiwyg-editor h2,
+.heading-classic .wysiwyg-editor h3 {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 3px;
+}
+
 .heading-modern .wysiwyg-editor h1,
 .heading-modern .wysiwyg-editor h2,
 .heading-modern .wysiwyg-editor h3,
@@ -1147,6 +1167,58 @@ body {
 }
 
 /* ---- Page style variants ---- */
+.page-parchment .wysiwyg-editor {
+  background: transparent;
+  font-family: 'Noto Serif SC', serif;
+}
+
+.page-parchment .page-bg-card {
+  background-color: #fdf6e3;
+  background-image: linear-gradient(135deg, #fdf6e3 0%, #f5e6c8 50%, #fdf6e3 100%);
+  border: 1px solid #d4c197;
+}
+
+.page-parchment .wysiwyg-editor h1,
+.page-parchment .wysiwyg-editor h2,
+.page-parchment .wysiwyg-editor h3,
+.page-parchment .wysiwyg-editor h4 {
+  color: #58180d;
+  font-family: 'Noto Serif SC', serif;
+}
+
+.page-parchment .wysiwyg-editor h1 {
+  border-bottom: 3px solid #c9ad6a;
+}
+
+.page-parchment .wysiwyg-editor h2 {
+  border-bottom: 2px solid #c9ad6a;
+}
+
+.page-parchment .wysiwyg-editor h3 {
+  border-bottom: 1px solid #c9ad6a;
+}
+
+.page-parchment .wysiwyg-editor blockquote {
+  border-left-color: #c9ad6a;
+  background: rgba(201, 173, 106, 0.12);
+}
+
+.page-parchment .wysiwyg-editor hr {
+  border-top-color: #c9ad6a;
+}
+
+.page-parchment .wysiwyg-editor th {
+  background: #58180d;
+}
+
+.page-parchment .wysiwyg-editor td {
+  border-bottom-color: #c9ad6a;
+}
+
+.page-parchment .wysiwyg-editor a {
+  color: #7a2a15;
+}
+
 .page-modern .wysiwyg-editor {
   background: transparent;
   font-family: 'Noto Sans SC', sans-serif;
