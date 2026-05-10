@@ -28,7 +28,7 @@ export function initImporterUI(importer) {
     // State
     let currentState = {
         source: 'kiwee-5e', // Default
-        type: 'spell',      // Default
+        type: 'monster',    // Changed default to monster as per user request
         selectedItem: null,
         previewHtml: '',
         lastRange: null
@@ -47,10 +47,11 @@ export function initImporterUI(importer) {
 
     function openModal() {
         // Save current selection if inside editor
+        // We also use mousedown on the button to capture it even earlier
         const selection = window.getSelection();
         const editor = document.getElementById('editor');
-        if (selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
-            currentState.lastRange = selection.getRangeAt(0);
+        if (selection.rangeCount > 0 && (editor.contains(selection.anchorNode) || editor === selection.anchorNode)) {
+            currentState.lastRange = selection.getRangeAt(0).cloneRange();
         }
 
         modal.classList.remove('hidden');
@@ -183,6 +184,14 @@ export function initImporterUI(importer) {
 
     // --- Events ---
 
+    // Capture selection before focus loss
+    btnOpen.addEventListener('mousedown', () => {
+        const selection = window.getSelection();
+        const editor = document.getElementById('editor');
+        if (selection.rangeCount > 0 && (editor.contains(selection.anchorNode) || editor === selection.anchorNode)) {
+            currentState.lastRange = selection.getRangeAt(0).cloneRange();
+        }
+    });
     btnOpen.addEventListener('click', openModal);
     btnClose.addEventListener('click', closeModal);
 
