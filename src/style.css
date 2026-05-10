@@ -609,37 +609,61 @@ body {
 }
 
 /* ---- Editor Typography ---- */
+.wysiwyg-editor h1,
+.wysiwyg-editor h2,
+.wysiwyg-editor h3,
+.wysiwyg-editor h4 {
+  text-rendering: optimizeLegibility;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.wysiwyg-editor h1:first-child,
+.wysiwyg-editor h2:first-child,
+.wysiwyg-editor h3:first-child,
+.wysiwyg-editor h4:first-child {
+  margin-top: 0;
+}
+
 .wysiwyg-editor h1 {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  font-size: 2.5em;
+  font-size: 2.4em;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.04em;
-  margin: 1em 0 0.5em;
   line-height: 1.1;
 }
 
 .wysiwyg-editor h2 {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  font-size: 1.8em;
+  font-size: 1.85em;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.03em;
-  margin: 1.2em 0 0.6em;
   line-height: 1.2;
 }
 
 .wysiwyg-editor h3 {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  font-size: 1.4em;
+  font-size: 1.45em;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
-  margin: 1.2em 0 0.6em;
+}
+
+.wysiwyg-editor h4 {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-size: 1.15em;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .wysiwyg-editor p {
-  margin: 0.8em 0;
+  margin: 0.9em 0;
+  orphans: 3;
+  widows: 3;
 }
 
 .wysiwyg-editor blockquote {
