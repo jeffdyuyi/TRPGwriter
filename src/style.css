@@ -1167,9 +1167,23 @@ body {
 }
 
 /* ---- Page style variants ---- */
+.page-parchment {
+  /* Force high-contrast dark text and light components on parchment background */
+  --text-primary: #1d1d1f;
+  --text-secondary: #4a4a4a;
+  --text-muted: #666;
+  --text-plum: #211922;
+  --bg-secondary: rgba(0, 0, 0, 0.04);
+  --bg-tertiary: rgba(0, 0, 0, 0.08);
+  --bg-surface: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.2);
+}
+
 .page-parchment .wysiwyg-editor {
   background: transparent;
   font-family: 'Noto Serif SC', serif;
+  color: var(--text-plum);
 }
 
 .page-parchment .page-bg-card {

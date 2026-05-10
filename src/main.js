@@ -1380,6 +1380,13 @@ function updatePageLayout() {
   if (_isLayoutUpdating) return;
   _isLayoutUpdating = true;
 
+  // Save selection before potential layout reflows (height changes)
+  const selection = window.getSelection();
+  let savedRange = null;
+  if (selection.rangeCount > 0 && (editor.contains(selection.anchorNode) || editor === selection.anchorNode)) {
+    savedRange = selection.getRangeAt(0).cloneRange();
+  }
+
   try {
     const container = $('#page-container');
     const overlay = $('#page-overlay');
@@ -1449,6 +1456,13 @@ function updatePageLayout() {
       }
     }
   } finally {
+    // Restore selection after layout reflow
+    if (savedRange) {
+      try {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+      } catch (e) {}
+    }
     _isLayoutUpdating = false;
   }
 }

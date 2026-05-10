@@ -157,28 +157,34 @@ export function initImporterUI(importer) {
     function importSelection() {
         if (!currentState.selectedItem || !currentState.previewHtml) return;
 
-        // Insert into editor
         const editor = document.getElementById('editor');
-        editor.focus();
-
-        // Restore last range if available to prevent inserting at the top
-        if (currentState.lastRange) {
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(currentState.lastRange);
-        }
-
-        // Use execCommand for undo support
-        // Note: insertHTML might insert at cursor.
-        document.execCommand('insertHTML', false, currentState.previewHtml);
-        document.execCommand('insertHTML', false, '<p><br></p>'); // Add spacing
-
+        
+        // 1. Close modal first to return focus environment to main document
         closeModal();
 
-        // Trigger auto-save or input event
+        // 2. Focus the editor explicitly
+        editor.focus();
+
+        // 3. Restore last range if available
+        if (currentState.lastRange) {
+            try {
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(currentState.lastRange);
+            } catch (err) {
+                console.warn('Could not restore selection range:', err);
+            }
+        }
+
+        // 4. Use execCommand to insert. It will now act on the restored selection.
+        // We combine the content and spacing to reduce selection movements.
+        const htmlToInsert = currentState.previewHtml + '<p style="font-weight:normal; font-style:normal; text-decoration:none; color:inherit;">&#8203;</p>';
+        document.execCommand('insertHTML', false, htmlToInsert);
+
+        // 5. Trigger layout update
         editor.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // E3: Toast通知
+        // 6. Toast通知
         if (window.__showToast) window.__showToast('已成功插入到编辑器', 'success');
     }
 
