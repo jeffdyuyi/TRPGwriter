@@ -575,6 +575,22 @@
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container"></div>
 
+  <!-- Floating Image Toolbar -->
+  <div id="image-toolbar" class="popover hidden" style="position: absolute; z-index: 999; display: flex; gap: 4px; padding: 4px; background: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); align-items: center;">
+    <span style="font-size: 11px; font-weight: bold; padding: 0 4px; color: var(--text-secondary);">宽度:</span>
+    <button class="img-size-btn format-btn" data-width="25%">25%</button>
+    <button class="img-size-btn format-btn" data-width="50%">50%</button>
+    <button class="img-size-btn format-btn" data-width="75%">75%</button>
+    <button class="img-size-btn format-btn" data-width="100%">100%</button>
+    <span style="color: var(--border); padding: 0 2px;">|</span>
+    <span style="font-size: 11px; font-weight: bold; padding: 0 4px; color: var(--text-secondary);">对齐:</span>
+    <button class="img-align-btn format-btn" data-align="left" title="靠左浮动"><span class="material-symbols-rounded" style="font-size:16px;">format_align_left</span></button>
+    <button class="img-align-btn format-btn" data-align="center" title="居中"><span class="material-symbols-rounded" style="font-size:16px;">format_align_center</span></button>
+    <button class="img-align-btn format-btn" data-align="right" title="靠右浮动"><span class="material-symbols-rounded" style="font-size:16px;">format_align_right</span></button>
+    <span style="color: var(--border); padding: 0 2px;">|</span>
+    <button class="img-delete-btn format-btn" title="删除图片" style="color: var(--accent-red);"><span class="material-symbols-rounded" style="font-size:16px;">delete</span></button>
+  </div>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 

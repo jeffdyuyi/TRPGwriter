@@ -2333,3 +2333,103 @@ body {
     color: #fff !important;
     border-bottom-color: #eee !important;
 }
+
+/* --- Avatar Styling inside TRPG cards --- */
+.stat-header-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.stat-header-info {
+  flex: 1;
+}
+
+.stat-avatar-container {
+  width: 90px;
+  height: 90px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  position: relative;
+  user-select: none;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.stat-avatar-container:hover {
+  border-color: var(--accent);
+  background: var(--bg-tertiary);
+}
+
+.stat-avatar-placeholder {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.3;
+  padding: 8px;
+}
+
+.stat-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stat-avatar-img.hidden {
+  display: none;
+}
+
+.avatar-remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  width: 14px;
+  height: 14px;
+  line-height: 12px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 10px;
+  cursor: pointer;
+  display: none;
+  z-index: 10;
+}
+
+.stat-avatar-container:hover .avatar-remove-btn {
+  display: block;
+}
+
+.avatar-remove-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+@media print {
+  /* Hide empty or unused avatar containers in print */
+  .stat-avatar-placeholder, .avatar-remove-btn {
+    display: none !important;
+  }
+  .stat-avatar-container {
+    border: none !important;
+    background: transparent !important;
+  }
+  /* If the avatar is explicitly empty (hidden img), hide the box entirely to keep it clean */
+  .stat-avatar-container:has(.stat-avatar-img.hidden),
+  .stat-avatar-container:not(:has(.stat-avatar-img)) {
+    display: none !important;
+  }
+}
+
+/* Image toolbar alignment highlights */
+#image-toolbar .format-btn.active {
+  background: var(--accent);
+  color: #fff;
+}

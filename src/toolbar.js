@@ -21,9 +21,18 @@ const TEMPLATES = {
   </div>`,
 
     'stat-block': `<div class="trpg-stat-block" contenteditable="false">
+    <div class="stat-header-layout">
+        <div class="stat-header-info" contenteditable="true">
+            <h3>怪物名称</h3>
+            <p class="stat-subtitle"><em>中型 人形生物，任意阵营</em></p>
+        </div>
+        <div class="stat-avatar-container" contenteditable="false" title="点击上传怪物头像">
+            <div class="stat-avatar-placeholder">点击添加头像</div>
+            <img class="stat-avatar-img hidden" src="" alt="头像" />
+            <span class="avatar-remove-btn" title="不使用头像">&times;</span>
+        </div>
+    </div>
     <div contenteditable="true">
-        <h3>怪物名称</h3>
-        <p class="stat-subtitle"><em>中型 人形生物，任意阵营</em></p>
         <p class="stat-line"><strong>护甲等级</strong> 12</p>
         <p class="stat-line"><strong>生命值</strong> 22 (5d8)</p>
         <p class="stat-line"><strong>速度</strong> 30尺</p>
@@ -39,8 +48,17 @@ const TEMPLATES = {
   </div>`,
 
     'coc-stat': `<div class="trpg-coc-stat-block" contenteditable="false">
+    <div class="stat-header-layout">
+        <div class="stat-header-info" contenteditable="true">
+            <h3>拜亚基，星骏</h3>
+        </div>
+        <div class="stat-avatar-container" contenteditable="false" title="点击上传怪物头像">
+            <div class="stat-avatar-placeholder">点击添加头像</div>
+            <img class="stat-avatar-img hidden" src="" alt="头像" />
+            <span class="avatar-remove-btn" title="不使用头像">&times;</span>
+        </div>
+    </div>
     <div contenteditable="true">
-        <h3>拜亚基，星骏</h3>
         <table class="coc-stat-table">
           <thead><tr><th>属性</th><th>平均</th><th>掷骰</th></tr></thead>
           <tbody>
@@ -104,9 +122,18 @@ const TEMPLATES = {
     'dice-inline': `<span class="dice-inline" data-dice="1d20" contenteditable="false">1d20</span>`,
 
     'dh-enemy': `<div class="trpg-dh-enemy" contenteditable="false">
+    <div class="stat-header-layout">
+        <div class="stat-header-info" contenteditable="true">
+            <h3>锯齿刀强盗</h3>
+            <p class="dh-meta">位阶1 标准</p>
+        </div>
+        <div class="stat-avatar-container" contenteditable="false" title="点击上传怪物头像">
+            <div class="stat-avatar-placeholder">点击添加头像</div>
+            <img class="stat-avatar-img hidden" src="" alt="头像" />
+            <span class="avatar-remove-btn" title="不使用头像">&times;</span>
+        </div>
+    </div>
     <div contenteditable="true">
-        <h3>锯齿刀强盗</h3>
-        <p class="dh-meta">位阶1 标准</p>
         <div class="dh-labeled-row"><span class="dh-label">动机/战术:</span> 逃跑、获利</div>
         <div class="dh-labeled-row"><span class="dh-label">经历:</span> 盗贼+2</div>
         <div class="dh-grid">

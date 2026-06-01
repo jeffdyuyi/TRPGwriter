@@ -44,7 +44,8 @@ let state = {
   openFiles: [],
   activeFileIndex: -1,
   autoSaveTimer: null,
-  colorMode: 'text' // 'text' or 'bg'
+  colorMode: 'text', // 'text' or 'bg'
+  activeAvatarContainer: null
 };
 
 // =============================================
@@ -612,67 +613,68 @@ function handleExportPDF() {
   const file = state.openFiles[state.activeFileIndex];
   if (!file) return;
 
+  // Remind the user to enable background graphics in print dialog
+  showToast('提示：为了完美导出精美页面背景与样式，请在打印选项中勾选『背景图形』！', 'info');
+
   const printWin = window.open('', '_blank');
+  const headStyles = Array.from(document.head.querySelectorAll('link, style')).map(el => el.outerHTML).join('\n');
+  const wrapperClass = $('#editor-wrapper').className;
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+
   printWin.document.write(`<!DOCTYPE html>
-<html><head>
-<meta charset="UTF-8">
-<title>${file.doc.title || 'TRPG文档'}</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
-<style>
-:root {
-  --accent: #0071e3;
-  --accent-orange: #f54e00;
-  --accent-red: #e60023;
-  --text-primary: #1d1d1f;
-  --text-secondary: #615d59;
-  --text-muted: #a39e98;
-  --text-plum: #211922;
-  --border: rgba(0, 0, 0, 0.08);
-  --border-strong: rgba(0, 0, 0, 0.15);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-}
-body {
-  font-family: "Charter", "Bitstream Charter", "Sitka Text", Cambria, serif;
-  line-height: 1.8;
-  font-size: 16px;
-  color: var(--text-plum);
-  max-width: 210mm;
-  margin: 0 auto;
-}
-h1, h2, h3 { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif; color: var(--text-primary); letter-spacing: -0.02em; }
-h1 { font-size: 2.5em; font-weight: 800; border-bottom: 1px solid var(--border-strong); padding-bottom: 4px; margin: 1em 0 0.5em; }
-h2 { font-size: 1.8em; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 3px; margin: 1.2em 0 0.6em; }
-h3 { font-size: 1.4em; font-weight: 700; border-bottom: 1px solid var(--border); margin: 1.2em 0 0.6em; }
-blockquote { border-left: 3px solid var(--accent); padding: 0.5em 1.5em; background: #f6f5f4; font-style: italic; border-radius: 0 4px 4px 0; }
-table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-th { background: #f6f5f4; color: var(--text-primary); padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border-strong); }
-td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
-.trpg-note { background: #f6f5f4; border: 1px solid var(--border); padding: 16px 20px; margin: 20px 0; border-radius: var(--radius-md); position: relative; }
-.trpg-note::before { content: 'NOTE'; display: block; font-weight: 800; color: var(--accent); margin-bottom: 8px; font-size: 11px; letter-spacing: 0.1em; }
-.trpg-warning { background: rgba(230, 0, 35, 0.05); border: 1px solid rgba(230, 0, 35, 0.1); padding: 16px 20px; margin: 20px 0; border-radius: var(--radius-md); position: relative; }
-.trpg-warning::before { content: 'WARNING'; display: block; font-weight: 800; color: var(--accent-red); margin-bottom: 8px; font-size: 11px; letter-spacing: 0.1em; }
-.trpg-stat-block { background: #ffffff; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 24px; margin: 24px 0; position: relative; }
-.trpg-stat-block::before, .trpg-stat-block::after { content: ''; position: absolute; left: 0; right: 0; height: 2px; background: var(--accent-orange); }
-.trpg-stat-block::before { top: 0; } .trpg-stat-block::after { bottom: 0; }
-.trpg-stat-block h3 { color: var(--accent-orange); font-size: 1.4em; font-weight: 800; border: none; margin: 0 0 4px; }
-.trpg-stat-block .stat-subtitle { font-style: italic; color: var(--text-secondary); margin-bottom: 8px; font-size: 0.9em; }
-.trpg-stat-block table th { background: transparent; color: var(--accent-orange); text-align: center; border-bottom: none; }
-.trpg-stat-block table td { text-align: center; border: none; }
-.dice-inline { background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 0.9em; font-weight: 600; }
-.page-break { page-break-after: always; break-after: page; border: none; height: 0; margin: 0; }
-hr { border: none; border-top: 1px solid var(--border-strong); margin: 2em 0; }
-img { max-width: 100%; border-radius: 4px; }
-.page-container { position: relative; width: 210mm; }
-.page-bg-card { position: absolute; left: 0; width: 100%; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.wysiwyg-editor { position: relative; width: 100%; outline: none; background: transparent; padding: var(--page-pad-top, 35mm) var(--page-pad-right, 25.4mm) var(--page-pad-bottom, 30mm) var(--page-pad-left, 25.4mm); }
-@media print {
-  body { margin: 0; padding: 0; max-width: none; }
-  .page-container { margin: 0; }
-  .page-overlay { display: none; }
-}
-</style>
-</head><body><div style="width:210mm; margin:0 auto; position:relative;">${$('#page-underlay').outerHTML}${editor.outerHTML}</div></body></html>`);
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${file.doc.title || 'TRPG文档'}</title>
+  ${headStyles}
+  <style>
+    /* Print overrides to force perfect A4 pagination and layout */
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: none !important;
+    }
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    /* Hide UI helper elements in printed output */
+    .page-divider, .page-overlay, .tab-close, .unsaved-dot {
+      display: none !important;
+    }
+    .page-container {
+      width: 210mm !important;
+      position: relative !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+    .wysiwyg-editor {
+      width: 210mm !important;
+      box-shadow: none !important;
+      border: none !important;
+      outline: none !important;
+      cursor: default !important;
+    }
+    .page-bg-card {
+      box-shadow: none !important;
+      border: none !important;
+    }
+    /* Force exact colors and backgrounds */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  </style>
+</head>
+<body class="${theme}">
+  <div class="${wrapperClass}" style="width:210mm; margin:0 auto; position:relative; min-height: 100%;">
+    <div id="page-container" class="page-container" style="width:210mm;">
+      ${$('#page-underlay').outerHTML}
+      ${editor.outerHTML}
+    </div>
+  </div>
+</body>
+</html>`);
   printWin.document.close();
   setTimeout(() => { printWin.print(); }, 500);
 }
@@ -1166,6 +1168,7 @@ function setupEventListeners() {
 
   // Image modal logic
   $('#btn-close-image').addEventListener('click', () => {
+    state.activeAvatarContainer = null;
     $('#image-modal').classList.add('hidden');
   });
 
@@ -1178,8 +1181,20 @@ function setupEventListeners() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        editor.focus();
-        document.execCommand('insertHTML', false, `<img src="${event.target.result}" alt="图片" style="max-width:100%"><br>`);
+        if (state.activeAvatarContainer) {
+          const img = state.activeAvatarContainer.querySelector('.stat-avatar-img');
+          const placeholder = state.activeAvatarContainer.querySelector('.stat-avatar-placeholder');
+          if (img && placeholder) {
+            img.src = event.target.result;
+            img.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            editor.dispatchEvent(new Event('input'));
+          }
+          state.activeAvatarContainer = null;
+        } else {
+          editor.focus();
+          document.execCommand('insertHTML', false, `<img src="${event.target.result}" alt="图片" style="max-width:100%"><br>`);
+        }
         updatePageLayout();
         $('#image-modal').classList.add('hidden');
         $('#input-image-local').value = '';
@@ -1191,13 +1206,168 @@ function setupEventListeners() {
   $('#btn-image-url').addEventListener('click', () => {
     const url = $('#input-image-url').value.trim();
     if (url) {
-      editor.focus();
-      document.execCommand('insertHTML', false, `<img src="${url.replace(/"/g, '&quot;')}" alt="图片" style="max-width:100%"><br>`);
+      if (state.activeAvatarContainer) {
+        const img = state.activeAvatarContainer.querySelector('.stat-avatar-img');
+        const placeholder = state.activeAvatarContainer.querySelector('.stat-avatar-placeholder');
+        if (img && placeholder) {
+          img.src = url;
+          img.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+          editor.dispatchEvent(new Event('input'));
+        }
+        state.activeAvatarContainer = null;
+      } else {
+        editor.focus();
+        document.execCommand('insertHTML', false, `<img src="${url.replace(/"/g, '&quot;')}" alt="图片" style="max-width:100%"><br>`);
+      }
       updatePageLayout();
       $('#image-modal').classList.add('hidden');
       $('#input-image-url').value = '';
     }
   });
+
+  // Avatar click handler inside editor
+  editor.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.avatar-remove-btn');
+    if (removeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const container = removeBtn.closest('.stat-avatar-container');
+      if (container) {
+        container.remove();
+        editor.dispatchEvent(new Event('input'));
+        updatePageLayout();
+      }
+      return;
+    }
+
+    const avatarContainer = e.target.closest('.stat-avatar-container');
+    if (avatarContainer) {
+      e.preventDefault();
+      e.stopPropagation();
+      state.activeAvatarContainer = avatarContainer;
+      $('#image-modal').classList.remove('hidden');
+    }
+  });
+
+  // Floating Image Toolbar Logic
+  let activeImage = null;
+
+  editor.addEventListener('click', (e) => {
+    if (e.target.tagName === 'IMG' && !e.target.classList.contains('stat-avatar-img')) {
+      e.preventDefault();
+      e.stopPropagation();
+      activeImage = e.target;
+      showImageToolbar(activeImage);
+    } else {
+      hideImageToolbar();
+    }
+  });
+
+  const editorScroll = $('#editor-scroll');
+  if (editorScroll) {
+    editorScroll.addEventListener('scroll', hideImageToolbar);
+  }
+  
+  document.addEventListener('mousedown', (e) => {
+    const toolbar = $('#image-toolbar');
+    if (toolbar && !toolbar.contains(e.target) && e.target !== activeImage) {
+      hideImageToolbar();
+    }
+  });
+
+  function showImageToolbar(img) {
+    const toolbar = $('#image-toolbar');
+    if (!toolbar) return;
+    
+    const rect = img.getBoundingClientRect();
+    
+    // Position the toolbar relatively to the absolute viewport scroll position
+    const top = rect.top + window.scrollY - 40; 
+    const left = rect.left + window.scrollX + (rect.width - 240) / 2; // Approximate width of 240px
+    
+    toolbar.style.top = `${top}px`;
+    toolbar.style.left = `${Math.max(10, left)}px`;
+    toolbar.classList.remove('hidden');
+
+    // Highlight active width button
+    const currentWidth = img.style.width || img.getAttribute('width') || '100%';
+    const currentFloat = img.style.float || 'none';
+    const isBlockCenter = img.style.display === 'block' && img.style.margin.includes('auto');
+
+    $$('.img-size-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.width === currentWidth);
+    });
+
+    $$('.img-align-btn').forEach(btn => {
+      if (btn.dataset.align === 'center') {
+        btn.classList.toggle('active', isBlockCenter);
+      } else {
+        btn.classList.toggle('active', currentFloat === btn.dataset.align && !isBlockCenter);
+      }
+    });
+  }
+
+  function hideImageToolbar() {
+    const toolbar = $('#image-toolbar');
+    if (toolbar) toolbar.classList.add('hidden');
+  }
+
+  // Bind events for Floating Toolbar buttons
+  $$('.img-size-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeImage) {
+        activeImage.style.width = btn.dataset.width;
+        activeImage.style.height = 'auto';
+        showImageToolbar(activeImage);
+        editor.dispatchEvent(new Event('input'));
+        updatePageLayout();
+      }
+    });
+  });
+
+  $$('.img-align-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeImage) {
+        const align = btn.dataset.align;
+        if (align === 'left') {
+          activeImage.style.float = 'left';
+          activeImage.style.display = 'inline-block';
+          activeImage.style.margin = '4px 16px 16px 0';
+        } else if (align === 'right') {
+          activeImage.style.float = 'right';
+          activeImage.style.display = 'inline-block';
+          activeImage.style.margin = '4px 0 16px 16px';
+        } else if (align === 'center') {
+          activeImage.style.float = 'none';
+          activeImage.style.display = 'block';
+          activeImage.style.margin = '16px auto';
+        }
+        showImageToolbar(activeImage);
+        editor.dispatchEvent(new Event('input'));
+        updatePageLayout();
+      }
+    });
+  });
+
+  const imgDelBtn = $('.img-delete-btn');
+  if (imgDelBtn) {
+    imgDelBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeImage && confirm('确定要删除这张图片吗？')) {
+        activeImage.remove();
+        activeImage = null;
+        hideImageToolbar();
+        editor.dispatchEvent(new Event('input'));
+        updatePageLayout();
+      }
+    });
+  }
 
   // B6: 粘贴时清除外部富文本样式，仅粘贴纯文本
   editor.addEventListener('paste', (e) => {
