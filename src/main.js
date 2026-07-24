@@ -613,53 +613,88 @@ function handleExportPDF() {
   const file = state.openFiles[state.activeFileIndex];
   if (!file) return;
 
-  // Remind the user to enable background graphics in print dialog
   showToast('提示：为了完美导出精美页面背景与样式，请在打印选项中勾选『背景图形』！', 'info');
 
   const printWin = window.open('', '_blank');
   const headStyles = Array.from(document.head.querySelectorAll('link, style')).map(el => el.outerHTML).join('\n');
   const wrapperClass = $('#editor-wrapper').className;
   const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  const baseUrl = window.location.href;
 
   printWin.document.write(`<!DOCTYPE html>
-<html>
+<html data-theme="${theme}">
 <head>
   <meta charset="UTF-8">
+  <base href="${baseUrl}">
   <title>${file.doc.title || 'TRPG文档'}</title>
   ${headStyles}
   <style>
     /* Print overrides to force perfect A4 pagination and layout */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background: none !important;
-    }
     @page {
-      size: A4;
+      size: A4 portrait;
       margin: 0;
     }
-    /* Hide UI helper elements in printed output */
-    .page-divider, .page-overlay, .tab-close, .unsaved-dot {
-      display: none !important;
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      width: 210mm !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .editor-wrapper {
+      width: 210mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      background: transparent !important;
     }
     .page-container {
       width: 210mm !important;
-      position: relative !important;
+      margin: 0 !important;
+      padding: 0 !important;
       box-shadow: none !important;
       border: none !important;
+      position: relative !important;
+    }
+    .page-underlay {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 210mm !important;
+      height: 100% !important;
+      z-index: 1 !important;
+    }
+    .page-bg-card {
+      width: 210mm !important;
+      height: 297mm !important;
+      position: absolute !important;
+      box-shadow: none !important;
+      border: none !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      box-sizing: border-box !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .wysiwyg-editor {
       width: 210mm !important;
+      height: auto !important;
+      min-height: 297mm !important;
       box-shadow: none !important;
       border: none !important;
       outline: none !important;
       cursor: default !important;
+      position: relative !important;
+      z-index: 5 !important;
+      background: transparent !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      box-sizing: border-box !important;
     }
-    .page-bg-card {
-      box-shadow: none !important;
-      border: none !important;
+    .page-divider, .page-overlay, .tab-close, .unsaved-dot, .status-bar, .page-number {
+      display: none !important;
     }
-    /* Force exact colors and backgrounds */
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -676,7 +711,32 @@ function handleExportPDF() {
 </body>
 </html>`);
   printWin.document.close();
-  setTimeout(() => { printWin.print(); }, 500);
+
+  // Wait for resources (fonts & images) before triggering print
+  Promise.all([
+    printWin.document.fonts ? printWin.document.fonts.ready : Promise.resolve(),
+    new Promise(resolve => {
+      const imgs = Array.from(printWin.document.images);
+      if (imgs.length === 0) return resolve();
+      let loaded = 0;
+      imgs.forEach(img => {
+        if (img.complete) {
+          loaded++;
+          if (loaded === imgs.length) resolve();
+        } else {
+          img.onload = img.onerror = () => {
+            loaded++;
+            if (loaded === imgs.length) resolve();
+          };
+        }
+      });
+      setTimeout(resolve, 800);
+    })
+  ]).then(() => {
+    setTimeout(() => {
+      printWin.print();
+    }, 300);
+  });
 }
 
 
@@ -923,26 +983,80 @@ function setupEventListeners() {
   formatPanel.addEventListener('click', handleToolbarClick);
   trpgPanel.addEventListener('click', handleToolbarClick);
 
+  // Helper to preserve/restore editor selection across formatting UI interactions
+  let savedFormatRange = null;
+  function captureFormatSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && (editor.contains(sel.anchorNode) || editor === sel.anchorNode)) {
+      savedFormatRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+  function restoreFormatSelection() {
+    if (savedFormatRange) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(savedFormatRange);
+      }
+    }
+  }
+
+  // Prevent buttons from stealing editor focus on click
+  formatPanel.addEventListener('mousedown', (e) => {
+    const btn = e.target.closest('.format-btn');
+    if (btn) {
+      captureFormatSelection();
+      e.preventDefault();
+    }
+  });
+
   // Format sidebar — command buttons
   formatPanel.addEventListener('click', (e) => {
     const btn = e.target.closest('.format-btn[data-cmd]');
     if (btn) {
       e.preventDefault();
+      restoreFormatSelection();
       executeFormatCommand(btn.dataset.cmd);
-      editor.focus();
+      try {
+        editor.focus({ preventScroll: true });
+      } catch (err) {
+        editor.focus();
+      }
       updateFormatBarState();
     }
   });
 
   // Format bar — block type select
-  $('#block-type-select').addEventListener('change', (e) => {
-    const val = e.target.value;
-    if (val.startsWith('cs-')) {
-      // Custom style
-      const styleId = val.replace('cs-', '');
-      const style = (state.prefs.customStyles || []).find(s => s.id === styleId);
-      if (style) {
-        applyBlockFormat(style.tag);
+  const blockTypeSelect = $('#block-type-select');
+  if (blockTypeSelect) {
+    blockTypeSelect.addEventListener('mousedown', captureFormatSelection);
+    blockTypeSelect.addEventListener('focus', captureFormatSelection);
+    blockTypeSelect.addEventListener('change', (e) => {
+      restoreFormatSelection();
+      const val = e.target.value;
+      if (val.startsWith('cs-')) {
+        // Custom style
+        const styleId = val.replace('cs-', '');
+        const style = (state.prefs.customStyles || []).find(s => s.id === styleId);
+        if (style) {
+          applyBlockFormat(style.tag);
+          setTimeout(() => {
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+              let node = sel.anchorNode;
+              if (node && node.nodeType === 3) node = node.parentNode;
+              const block = node ? node.closest('h1, h2, h3, h4, p, blockquote, div') : null;
+              if (block && editor.contains(block)) {
+                block.className = block.className.replace(/\bcs-\w+\b/g, '').trim();
+                block.classList.add(`cs-${style.id}`);
+                editor.dispatchEvent(new Event('input'));
+              }
+            }
+          }, 0);
+        }
+      } else {
+        // Standard style
+        applyBlockFormat(val);
         setTimeout(() => {
           const sel = window.getSelection();
           if (sel.rangeCount > 0) {
@@ -951,37 +1065,28 @@ function setupEventListeners() {
             const block = node ? node.closest('h1, h2, h3, h4, p, blockquote, div') : null;
             if (block && editor.contains(block)) {
               block.className = block.className.replace(/\bcs-\w+\b/g, '').trim();
-              block.classList.add(`cs-${style.id}`);
               editor.dispatchEvent(new Event('input'));
             }
           }
         }, 0);
       }
-    } else {
-      // Standard style
-      applyBlockFormat(val);
-      setTimeout(() => {
-        const sel = window.getSelection();
-        if (sel.rangeCount > 0) {
-          let node = sel.anchorNode;
-          if (node && node.nodeType === 3) node = node.parentNode;
-          const block = node ? node.closest('h1, h2, h3, h4, p, blockquote, div') : null;
-          if (block && editor.contains(block)) {
-            block.className = block.className.replace(/\bcs-\w+\b/g, '').trim();
-            editor.dispatchEvent(new Event('input'));
-          }
-        }
-      }, 0);
-    }
-    editor.focus();
-  });
+      try {
+        editor.focus({ preventScroll: true });
+      } catch (err) {
+        editor.focus();
+      }
+    });
+  }
 
   // Font Size Select
   const fontSizeSelect = $('#font-size-select');
   if (fontSizeSelect) {
+    fontSizeSelect.addEventListener('mousedown', captureFormatSelection);
+    fontSizeSelect.addEventListener('focus', captureFormatSelection);
     fontSizeSelect.addEventListener('change', (e) => {
       const val = e.target.value;
       if (!val) return;
+      restoreFormatSelection();
       document.execCommand('styleWithCSS', false, false);
       document.execCommand('fontSize', false, '7');
       const fontEls = editor.querySelectorAll('font[size="7"]');
@@ -990,35 +1095,61 @@ function setupEventListeners() {
         el.style.fontSize = val;
       }
       e.target.value = '';
-      editor.focus();
+      try {
+        editor.focus({ preventScroll: true });
+      } catch (err) {
+        editor.focus();
+      }
       editor.dispatchEvent(new Event('input'));
     });
   }
 
   // Font select
-  $('#btn-font-select').addEventListener('click', (e) => {
-    showPopover('font-popover', e.currentTarget);
-  });
+  const btnFontSelect = $('#btn-font-select');
+  if (btnFontSelect) {
+    btnFontSelect.addEventListener('mousedown', captureFormatSelection);
+    btnFontSelect.addEventListener('click', (e) => {
+      showPopover('font-popover', e.currentTarget);
+    });
+  }
   $$('.font-option').forEach(btn => {
     btn.addEventListener('click', () => {
+      restoreFormatSelection();
       applyFont(btn.dataset.font);
       $('#font-popover').classList.add('hidden');
-      editor.focus();
+      try {
+        editor.focus({ preventScroll: true });
+      } catch (err) {
+        editor.focus();
+      }
     });
   });
 
   // Color text
-  $('#btn-color-text').addEventListener('click', (e) => {
-    state.colorMode = 'text';
-    $('#color-popover-title').textContent = '文字颜色';
-    showPopover('color-popover', e.currentTarget);
-  });
+  const btnColorText = $('#btn-color-text');
+  if (btnColorText) {
+    btnColorText.addEventListener('mousedown', captureFormatSelection);
+    btnColorText.addEventListener('click', (e) => {
+      state.colorMode = 'text';
+      $('#color-popover-title').textContent = '文字颜色';
+      showPopover('color-popover', e.currentTarget);
+    });
+  }
 
   // Custom color
-  $('#custom-color').addEventListener('input', (e) => {
-    applyColor(e.target.value, state.colorMode);
-    editor.focus();
-  });
+  const customColor = $('#custom-color');
+  if (customColor) {
+    customColor.addEventListener('mousedown', captureFormatSelection);
+    customColor.addEventListener('input', (e) => {
+      restoreFormatSelection();
+      applyColor(e.target.value, state.colorMode);
+      try {
+        editor.focus({ preventScroll: true });
+      } catch (err) {
+        editor.focus();
+      }
+    });
+  }
 
   // Dice modal
   $('#btn-close-dice').addEventListener('click', closeDiceModal);
@@ -1550,10 +1681,13 @@ function updatePageLayout() {
   if (_isLayoutUpdating) return;
   _isLayoutUpdating = true;
 
+  const scrollEl = $('#editor-scroll');
+  const savedScrollTop = scrollEl ? scrollEl.scrollTop : 0;
+
   // Save selection before potential layout reflows (height changes)
   const selection = window.getSelection();
   let savedRange = null;
-  if (selection.rangeCount > 0 && (editor.contains(selection.anchorNode) || editor === selection.anchorNode)) {
+  if (selection && selection.rangeCount > 0 && (editor.contains(selection.anchorNode) || editor === selection.anchorNode)) {
     savedRange = selection.getRangeAt(0).cloneRange();
   }
 
@@ -1563,17 +1697,17 @@ function updatePageLayout() {
 
     if (!container || !overlay) return;
 
-    // 1mm = 3.7795px approx
-    const mmToPx = 3.779527559;
-    const pageHeight = Math.ceil(297 * mmToPx); // ~1123px standard A4 height at 96dpi
+    // 1mm in CSS at 96 DPI standard is 96 / 25.4 px (~3.779527559px)
+    const mmToPx = 96 / 25.4;
+    const pageHeightPx = 297 * mmToPx;
 
-    // We need to reset height to auto temporarily to measure natural content height
-    editor.style.height = 'auto'; // Reset to measure
+    // Reset height to auto temporarily to measure natural content height
+    editor.style.height = 'auto';
     const contentHeight = editor.scrollHeight;
-    const numPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+    const numPages = Math.max(1, Math.ceil(contentHeight / pageHeightPx));
 
-    // Set height to multiple of page height
-    editor.style.height = `${numPages * pageHeight}px`;
+    // Set height using calc(N * 297mm) for exact precision between screen and A4 print
+    editor.style.height = `calc(${numPages} * 297mm)`;
 
     const file = state.openFiles[state.activeFileIndex];
     const bgData = (file && file.doc.backgrounds) || {};
@@ -1599,8 +1733,8 @@ function updatePageLayout() {
       if (underlay) {
         const bgCard = document.createElement('div');
         bgCard.className = 'page-bg-card';
-        bgCard.style.top = `${(i - 1) * pageHeight}px`;
-        bgCard.style.height = `${pageHeight}px`;
+        bgCard.style.top = `calc(${i - 1} * 297mm)`;
+        bgCard.style.height = '297mm';
 
         let bgImg = bgData[i.toString()] || bgData['all'];
         if (bgImg) {
@@ -1613,7 +1747,7 @@ function updatePageLayout() {
       const pageNum = document.createElement('div');
       pageNum.className = 'page-number';
       pageNum.textContent = `- ${i} -`;
-      pageNum.style.top = `${i * pageHeight - 30}px`; // 30px from bottom
+      pageNum.style.top = `calc(${i} * 297mm - 30px)`;
       overlay.appendChild(pageNum);
 
       // Divider (between pages)
@@ -1621,7 +1755,7 @@ function updatePageLayout() {
         const divider = document.createElement('div');
         divider.className = 'page-divider';
         divider.dataset.page = `第 ${i + 1} 页`;
-        divider.style.top = `${i * pageHeight}px`;
+        divider.style.top = `calc(${i} * 297mm)`;
         overlay.appendChild(divider);
       }
     }
@@ -1632,6 +1766,9 @@ function updatePageLayout() {
         selection.removeAllRanges();
         selection.addRange(savedRange);
       } catch (e) {}
+    }
+    if (scrollEl) {
+      scrollEl.scrollTop = savedScrollTop;
     }
     _isLayoutUpdating = false;
   }
